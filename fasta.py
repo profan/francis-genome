@@ -25,17 +25,19 @@ parser.add_argument(
     help='the directory with the fasta (.fa) files in it to upload'
 )
 
-def write_job_id_to_file(job_id, file_name):
-    if not os.path.exists('submitted_jobs.csv'):
-        print("[batch] writing id: %s to new file: %s" % (job_id, file_name))
-        with open('output/submitted_jobs.csv', 'w') as csvfile:
+def write_job_id_to_file(job_id, file_name, success):
+    output_filename = 'output/submitted_jobs.csv'
+    if not os.path.exists(output_filename):
+        print("[batch] writing id: %s to new file: %s" % (job_id, output_filename))
+        with open(output_filename, 'w') as csvfile:
             our_writer = csv.writer(csvfile)
-            our_writer.writerow([job_id, file_name])
+            our_writer.writerow(['job_id', 'file_name', 'success'])
+            our_writer.writerow([job_id, file_name, success])
     else:
-        print("[batch] writing id: %s to existing file: %s" % (job_id, file_name))
-        with open('output/submitted_jobs.csv', 'a') as csvfile:
+        print("[batch] writing id: %s to existing file: %s" % (job_id, output_filename))
+        with open(output_filename, 'a') as csvfile:
             our_writer = csv.writer(csvfile)
-            our_writer.writerow([job_id, file_name])
+            our_writer.writerow([job_id, file_name, success])
 
 def submit_fasta_files_in_dir(username, password, directory):
     os.chdir(args.directory)
@@ -46,9 +48,10 @@ def submit_fasta_files_in_dir(username, password, directory):
                 output = subprocess.getoutput(absolute_cmd_path % (args.username, args.password, entry))
                 our_match = fasta_job_output_regex.search(output)
                 submitted_job_id = our_match.group(1)
-                write_job_id_to_file(submitted_job_id, entry)
+                write_job_id_to_file(submitted_job_id, entry, success = True)
             except:
                 print("[batch] failed to submit: %s at %s" % (entry, datetime.datetime.now()))
+                write_job_id_to_file(-1, entry, success = False)
 
 args = parser.parse_args()
 submit_fasta_files_in_dir(args.username, args.password, args.directory)
