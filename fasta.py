@@ -39,19 +39,35 @@ def write_job_id_to_file(job_id, file_name, success):
             our_writer = csv.writer(csvfile)
             our_writer.writerow([job_id, file_name, success])
 
+def get_files_for_jobs_in_folder(extension):
+    paths = []
+    for entry in os.listdir():
+        if os.path.isfile(entry) and entry.endswith(extension):
+            paths.append(entry)
+    return paths
+
 def submit_fasta_files_in_dir(username, password, directory):
     os.chdir(args.directory)
-    for entry in os.listdir():
-        if os.path.isfile(entry) and entry.endswith(".fa"):
-            try:
-                print("[batch] trying to submit: %s at %s" % (entry, datetime.datetime.now()))
-                output = subprocess.getoutput(absolute_cmd_path % (args.username, args.password, entry))
-                our_match = fasta_job_output_regex.search(output)
-                submitted_job_id = our_match.group(1)
-                write_job_id_to_file(submitted_job_id, entry, success = True)
-            except:
-                print("[batch] failed to submit: %s at %s" % (entry, datetime.datetime.now()))
-                write_job_id_to_file(-1, entry, success = False)
+    all_job_paths = get_files_for_jobs_in_folder(".fa")
+    total_jobs_in_folder = len(all_job_paths)
+    print("[batch] total jobs to submit: %d at: %s" % (total_jobs_in_folder, datetime.datetime.now()))
+    total_successful_jobs = 0
+    total_failed_jobs = 0
+    for entry in all_job_paths:
+        try:
+            print("[batch] trying to submit: %s at %s" % (entry, datetime.datetime.now()))
+            output = subprocess.getoutput(absolute_cmd_path % (args.username, args.password, entry))
+            our_match = fasta_job_output_regex.search(output)
+            submitted_job_id = our_match.group(1)
+            write_job_id_to_file(submitted_job_id, entry, success = True)
+            total_successful_jobs += 1
+        except:
+            total_failed_jobs += 1
+            print("[batch] failed to submit: %s at %s" % (entry, datetime.datetime.now()))
+            write_job_id_to_file(-1, entry, success = False)
+    print("[batch] total successful jobs: %d" % total_successful_jobs)
+    print("[batch] total failed jobs: %d" % total_failed_jobs)
+    print("[batch] finished at %s" % datetime.datetime.now())
 
 args = parser.parse_args()
 submit_fasta_files_in_dir(args.username, args.password, args.directory)
