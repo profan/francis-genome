@@ -10,6 +10,8 @@ parser.add_argument(
 
 args = parser.parse_args()
 
+cur_dir = os.getcwd()
+
 # workaround
 os.chdir(args.directory)
 files = os.listdir()
@@ -53,3 +55,20 @@ for e_cur in data_files:
 
 for (file_name, proteins) in unique_proteins.items():
     print("file: %s has %d unique proteins" % (file_name, len(proteins)))
+
+# format and output the data
+
+# first all genes common to all the datasets passed in
+with open(os.path.join(cur_dir, 'output/common_proteins.csv'), 'w') as csvfile:
+    writer = csv.DictWriter(csvfile, fieldnames=['figfam'])
+    writer.writeheader()
+    for fig in all_common_proteins:
+        writer.writerow({'figfam' : fig})
+
+# then a sheet with all that are unique
+with open(os.path.join(cur_dir, 'output/unique_proteins.csv'), 'w') as csvfile:
+    writer = csv.DictWriter(csvfile, fieldnames=['file_name', 'figfam'])
+    writer.writeheader()
+    for (file_name, proteins) in unique_proteins.items():
+        for fig in proteins:
+            writer.writerow({'file_name' : file_name,'figfam' : fig})
