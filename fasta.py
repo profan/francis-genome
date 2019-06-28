@@ -26,19 +26,20 @@ parser.add_argument(
 )
 
 def write_job_id_to_file(job_id, file_name):
-    print("[batch] writing id: %s to file: %s" % (job_id, file_name))
     if not os.path.exists('submitted_jobs.csv'):
-        with open('submitted_jobs.csv', 'w') as csvfile:
+        print("[batch] writing id: %s to new file: %s" % (job_id, file_name))
+        with open('output/submitted_jobs.csv', 'w') as csvfile:
             our_writer = csv.writer(csvfile)
             our_writer.writerow([job_id, file_name])
     else:
-        with open('submitted_jobs.csv', 'a') as csvfile:
+        print("[batch] writing id: %s to existing file: %s" % (job_id, file_name))
+        with open('output/submitted_jobs.csv', 'a') as csvfile:
             our_writer = csv.writer(csvfile)
-            our_writer.writerow(["job_id", "fasta_file"])
             our_writer.writerow([job_id, file_name])
 
 def submit_fasta_files_in_dir(username, password, directory):
-    for entry in os.listdir(args.directory):
+    os.chdir(args.directory)
+    for entry in os.listdir():
         if os.path.isfile(entry) and entry.endswith(".fa"):
             try:
                 print("[batch] trying to submit: %s at %s" % (entry, datetime.datetime.now()))
