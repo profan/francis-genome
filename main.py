@@ -9,7 +9,6 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
-
 cur_dir = os.getcwd()
 
 # workaround
@@ -42,8 +41,8 @@ all_unique_proteins = set.union(*all_proteins)
 # calculate the intersection of the sets of proteins, gives us all which are common
 all_common_proteins = set.intersection(*all_proteins)
 
-print("total unique proteins: %d" % (len(all_unique_proteins)))
-print("total common proteins: %d" % (len(all_common_proteins)))
+print("[protein] total unique proteins: %d" % (len(all_unique_proteins)))
+print("[protein] total common proteins: %d" % (len(all_common_proteins)))
 
 # calculate and present the proteins which are unique to each genome, and to which
 unique_proteins = {}
@@ -54,19 +53,24 @@ for e_cur in data_files:
     unique_proteins[e_cur['file_name']] = cur_unique_proteins
 
 for (file_name, proteins) in unique_proteins.items():
-    print("file: %s has %d unique proteins" % (file_name, len(proteins)))
+    print("[protein] file %s has %d unique proteins" % (file_name, len(proteins)))
 
 # format and output the data
 
 # first all genes common to all the datasets passed in
-with open(os.path.join(cur_dir, 'output/common_proteins.csv'), 'w') as csvfile:
+common_file_path = os.path.join(cur_dir, 'output/common_proteins.csv')
+with open(common_file_path, 'w') as csvfile:
+    print("[protein] wrote common proteins to: %s", common_file_path)
     writer = csv.DictWriter(csvfile, fieldnames=['figfam'])
     writer.writeheader()
     for fig in all_common_proteins:
         writer.writerow({'figfam' : fig})
 
 # then a sheet with all that are unique
-with open(os.path.join(cur_dir, 'output/unique_proteins.csv'), 'w') as csvfile:
+unique_file_path = os.path.join(cur_dir, 'output/unique_proteins.csv')
+with open(unique_file_path, 'w') as csvfile:
+    print("[protein] wrote unique proteins to: %s", unique_file_path)
+    writer = csv.DictWriter(csvfile, fieldnames=['figfam'])
     writer = csv.DictWriter(csvfile, fieldnames=['file_name', 'figfam'])
     writer.writeheader()
     for (file_name, proteins) in unique_proteins.items():
