@@ -110,7 +110,6 @@ with open(common_file_path, 'w') as csvfile:
 unique_file_path = os.path.join(cur_dir, 'output/unique_proteins.csv')
 with open(unique_file_path, 'w') as csvfile:
     print("[protein] wrote unique proteins to: %s", unique_file_path)
-    writer = csv.DictWriter(csvfile, fieldnames=['figfam'])
     writer = csv.DictWriter(csvfile, fieldnames=['file_name', 'contig_id', 'figfam', 'function'])
     writer.writeheader()
     for (file_name, (contig_id, proteins)) in unique_proteins.items():
