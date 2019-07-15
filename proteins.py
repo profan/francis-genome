@@ -57,7 +57,7 @@ for entry in files:
                     skipped_entries += 1
             if contig_id in all_genome_ids:
                 prev_file_name = all_genome_ids[contig_id]['file_name']
-                raise Exception("[protein] found id: %s in %s, previously encountered in file: %s" % (contig_id, entry, prev_file_name))
+                raise Exception("[protein] found duplicate id: %s in %s, previously encountered in file: %s" % (contig_id, entry, prev_file_name))
             else:
                 all_genome_ids[contig_id] = {'file_name' : entry}
                 data_files.append({'file_name' : entry, 'contig_id' : contig_id, 'proteins' : proteins})
