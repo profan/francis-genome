@@ -25,6 +25,12 @@ parser.add_argument(
     help='the directory with the fasta (.fa) files in it to upload'
 )
 
+def create_output_dir_if_not_exists():
+    if os.path.exists('output') and os.path.isfile('output'):
+        raise Error("[batch] output exists but is file, expected directory!")
+    elif not os.path.exists('output'):
+        os.mkdir('output')
+
 def write_job_id_to_file(job_id, file_name, success):
     output_filename = 'output/submitted_jobs.csv'
     if not os.path.exists(output_filename):
@@ -70,4 +76,5 @@ def submit_fasta_files_in_dir(username, password, directory):
     print("[batch] finished at %s" % datetime.datetime.now())
 
 args = parser.parse_args()
+create_output_dir_if_not_exists()
 submit_fasta_files_in_dir(args.username, args.password, args.directory)
