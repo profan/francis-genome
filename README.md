@@ -1,5 +1,5 @@
 francis-genome
 ---------------
 
-## Requirements
+## requirements
 * Python 3.6+
