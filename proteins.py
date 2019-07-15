@@ -133,6 +133,37 @@ with open(unique_file_path, 'w') as csvfile:
                 }
             )
 
+# number of nonempty sets
+nonempty_unique_protein_sets = 0
+for (file_name, (contig_id, proteins)) in unique_proteins.items():
+    if len(proteins) > 0: nonempty_unique_protein_sets += 1
+
+# write in column form
+unique_column_file_path = os.path.join(cur_dir, 'output/unique_column_proteins.csv')
+with open(unique_column_file_path, 'w') as csvfile:
+    print("[protein] wrote unique proteins to: %s" % unique_column_file_path)
+    writer = csv.writer(csvfile, dialect="excel")
+    writer.writerow(['file_name', 'contig_id', 'figfam', 'function', ''] * nonempty_unique_protein_sets)
+    data_to_write = []
+    cur_column = 0
+    for (file_name, (contig_id, proteins)) in unique_proteins.items():
+        cur_row = 0
+        # nothing to write
+        if len(proteins) == 0: continue
+        for fig in proteins:
+            if cur_row >= len(data_to_write): data_to_write.append([])
+            cur_fig_data = all_protein_data[fig]
+            cur_row_len = len(data_to_write[cur_row])
+            if cur_row_len != cur_column * 5:
+                needed_padding = (cur_column * 5) - cur_row_len
+                data_to_write[cur_row] += [''] * needed_padding
+            data_to_write[cur_row] += [file_name, contig_id, fig, cur_fig_data['function'], '']
+            cur_row += 1
+        cur_column += 1
+    # finally write the data
+    for row in data_to_write:
+        writer.writerow(row)
+
 # output a sheet with the stats also shown in console
 stats_file_path = os.path.join(cur_dir, 'output/output_stats.csv')
 with open(stats_file_path, 'w') as csvfile:
