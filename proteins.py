@@ -27,6 +27,7 @@ os.chdir(args.directory)
 files = os.listdir()
 
 # first collect all proteins associated with each file
+all_genome_ids = {}
 all_protein_data = {}
 skipped_entries = 0
 total_entries = 0
@@ -54,7 +55,12 @@ for entry in files:
                     all_protein_data[fig] = {'function' : row['function']}
                 else:
                     skipped_entries += 1
-            data_files.append({'file_name' : entry, 'contig_id' : contig_id, 'proteins' : proteins})
+            if contig_id in all_genome_ids:
+                prev_file_name = all_genome_ids[contig_id]['file_name']
+                raise Exception("[protein] found id: %s in %s, previously encountered in file: %s" % (contig_id, entry, prev_file_name))
+            else:
+                all_genome_ids[contig_id] = {'file_name' : entry}
+                data_files.append({'file_name' : entry, 'contig_id' : contig_id, 'proteins' : proteins})
 
 # check that our data is now nonempty, else there were no data files in directory
 if len(data_files) == 0:
