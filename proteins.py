@@ -9,7 +9,7 @@ def get_leading_id(s):
 def create_output_directory_if_not_exists(cwd):
     output_dir_path = os.path.join(cwd, 'output')
     if os.path.exists(output_dir_path) and os.path.isfile(output_dir_path):
-        raise Exception("[protein] output exists but is a file, expected output to be a directory!")
+        raise Exception("output exists but is a file, expected output to be a directory!")
     elif not os.path.exists(output_dir_path):
         os.mkdir(output_dir_path)
 
@@ -57,7 +57,7 @@ for entry in files:
                     skipped_entries += 1
             if contig_id in all_genome_ids:
                 prev_file_name = all_genome_ids[contig_id]['file_name']
-                raise Exception("[protein] found duplicate id: %s in %s, previously encountered in file: %s" % (contig_id, entry, prev_file_name))
+                raise Exception("found duplicate id: %s in %s, previously encountered in file: %s" % (contig_id, entry, prev_file_name))
             else:
                 all_genome_ids[contig_id] = {'file_name' : entry}
                 data_files.append({'file_name' : entry, 'contig_id' : contig_id, 'proteins' : proteins})
