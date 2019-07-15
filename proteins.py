@@ -6,6 +6,13 @@ import argparse
 def get_leading_id(s):
     return s.split("_", 1)[0]
 
+def create_output_directory_if_not_exists(cwd):
+    output_dir_path = os.path.join(cwd, 'output')
+    if os.path.exists(output_dir_path) and os.path.isfile(output_dir_path):
+        raise Exception("[protein] output exists but is a file, expected output to be a directory!")
+    elif not os.path.exists(output_dir_path):
+        os.mkdir(output_dir_path)
+
 parser = argparse.ArgumentParser(description='Calculates proteins common to all genomes in directory, outputting a spreadsheet for the proteins common to all genomes and a spreadsheet which holds all the proteins unique to each genome, marked with which genome to which they are unique, if any.')
 parser.add_argument(
     'directory', type=str, default=os.getcwd(), nargs="?",
@@ -54,11 +61,7 @@ if len(data_files) == 0:
     raise Exception("expected at least one data file in %s to read from! got none." % args.directory)
 
 # if output directory does not exist, create it
-output_dir_path = os.path.join(cur_dir, 'output')
-if os.path.exists(output_dir_path) and os.path.isfile(output_dir_path):
-    raise Exception("[protein] output exists but is a file, expected output to be a directory!")
-elif not os.path.exists(output_dir_path):
-    os.mkdir(output_dir_path)
+create_output_directory_if_not_exists(cur_dir)
 
 # accumulate all proteins into a big list first
 all_proteins = []
