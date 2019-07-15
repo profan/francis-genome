@@ -33,12 +33,12 @@ total_entries = 0
 
 data_files = []
 for entry in files:
-    have_fetched_contig_id = False
     filename, file_ext = os.path.splitext(entry)
     if os.path.isfile(entry) and file_ext == '.csv':
         with open(entry) as csvfile:
             reader = csv.DictReader(csvfile)
             proteins = set() # to automatically eliminate duplicates
+            have_fetched_contig_id = False
             contig_id = -1
             for row in reader:
                 # keep track of total number of entries
@@ -87,10 +87,10 @@ for e_cur in data_files:
     all_except_cur = [e['proteins'] for e in data_files if e != e_cur]
     cur_unique_proteins = cur_proteins.difference(*all_except_cur)
     cur_contig_id = e_cur['contig_id']
-    unique_proteins[e_cur['file_name']] = (contig_id, cur_unique_proteins)
+    unique_proteins[e_cur['file_name']] = (cur_contig_id, cur_unique_proteins)
 
 for (file_name, (contig_id, proteins)) in unique_proteins.items():
-    print("[protein] file %s has %d unique proteins" % (file_name, len(proteins)))
+    print("[protein] file %s (id: %s) has %d unique proteins" % (file_name, contig_id, len(proteins)))
 
 # format and output the data
 
