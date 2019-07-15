@@ -34,6 +34,10 @@ for entry in files:
                     all_protein_data[fig] = {'function' : row['function']}
             data_files.append({'file_name' : entry, 'proteins' : proteins})
 
+# check that our data is now nonempty, else there were no data files in directory
+if len(data_files) == 0:
+    raise Exception("expected at least one data file in %s to read from! got none." % args.directory)
+
 # accumulate all proteins into a big list first
 all_proteins = []
 for data in data_files:
