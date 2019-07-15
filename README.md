@@ -14,5 +14,7 @@ Only proteins which have a figfam classification are included in the analysis.
 * Unique proteins are output in `output/unique_proteins.csv`.
 * Common proteins are output in `output/common_proteins.csv`.
 
+The script reads all `.csv` files from the current working directory for the analysis if no directory is passed.
+
 ## requirements
 * Python 3.6+
