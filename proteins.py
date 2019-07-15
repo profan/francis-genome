@@ -97,8 +97,8 @@ for (file_name, (contig_id, proteins)) in unique_proteins.items():
 # first all genes common to all the datasets passed in
 common_file_path = os.path.join(cur_dir, 'output/common_proteins.csv')
 with open(common_file_path, 'w') as csvfile:
-    print("[protein] wrote common proteins to: %s", common_file_path)
-    writer = csv.DictWriter(csvfile, fieldnames=['figfam', 'function'])
+    print("[protein] wrote common proteins to: %s" % common_file_path)
+    writer = csv.DictWriter(csvfile, fieldnames=['figfam', 'function'], dialect="excel")
     writer.writeheader()
     for fig in all_common_proteins:
         cur_fig_data = all_protein_data[fig]
@@ -112,8 +112,8 @@ with open(common_file_path, 'w') as csvfile:
 # then a sheet with all that are unique
 unique_file_path = os.path.join(cur_dir, 'output/unique_proteins.csv')
 with open(unique_file_path, 'w') as csvfile:
-    print("[protein] wrote unique proteins to: %s", unique_file_path)
-    writer = csv.DictWriter(csvfile, fieldnames=['file_name', 'contig_id', 'figfam', 'function'])
+    print("[protein] wrote unique proteins to: %s" % unique_file_path)
+    writer = csv.DictWriter(csvfile, fieldnames=['file_name', 'contig_id', 'figfam', 'function'], dialect="excel")
     writer.writeheader()
     for (file_name, (contig_id, proteins)) in unique_proteins.items():
         for fig in proteins:
@@ -126,3 +126,15 @@ with open(unique_file_path, 'w') as csvfile:
                     'function' : cur_fig_data['function']
                 }
             )
+
+# output a sheet with the stats also shown in console
+stats_file_path = os.path.join(cur_dir, 'output/output_stats.csv')
+with open(stats_file_path, 'w') as csvfile:
+    print("[protein] wrote output stats to: %s" % stats_file_path)
+    writer = csv.writer(csvfile, dialect="excel")
+    writer.writerow(['Total Different Proteins', len(all_unique_proteins)])
+    writer.writerow(['Total Common Proteins', len(all_common_proteins)])
+    writer.writerow(['Total % of Discarded Proteins', percentage_skipped])
+    writer.writerow(['Filename', 'Genome', 'Unique Proteins'])
+    for (file_name, (contig_id, proteins)) in unique_proteins.items():
+        writer.writerow([file_name, contig_id, len(proteins)])
