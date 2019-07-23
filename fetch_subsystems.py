@@ -66,7 +66,7 @@ parser.add_argument(
     help='your login password'
 )
 parser.add_argument(
-    '--submitted_jobs_file', metavar='filename', type=str,
+    '--filename', metavar='filename', type=str,
     help='csv with submitted jobs'
 )
 
