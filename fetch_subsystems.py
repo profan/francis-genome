@@ -76,7 +76,7 @@ session = login_to_rast(args.username, args.password)
 all_job_ids = collect_job_ids_from_csv(args.filename)
 print("[fetch_subsystems] got %d job ids to fetch" % len(all_job_ids))
 
-for i, job_id in all_job_ids.enumerate():
+for i, job_id in enumerate(all_job_ids):
     genome_url = extract_genome_url_for_job_id(session, test_job_id)
     webbrowser.open_new_tab(genome_url)
     input("[fetch_subsystems] press enter to load %d of %d" % (i + 1, len(all_job_ids)))
