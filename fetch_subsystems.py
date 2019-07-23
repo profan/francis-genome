@@ -92,6 +92,10 @@ parser.add_argument(
     '--filename', metavar='filename', type=str, required=True,
     help='csv with submitted jobs'
 )
+parser.add_argument(
+    '--output-dir', metavar='output_dir', type=str, default=os.getcwd(),
+    help='csv with submitted jobs'
+)
 
 args = parser.parse_args()
 
@@ -101,7 +105,7 @@ capabilities["pageLoadStrategy"] = "eager"
 
 # save file shite
 profile = webdriver.FirefoxProfile()
-profile.set_preference("browser.download.dir", os.getcwd());
+profile.set_preference("browser.download.dir", args.output_dir);
 profile.set_preference("browser.download.folderList", 2);
 profile.set_preference("browser.helperApps.neverAsk.saveToDisk", "application/x-download")
 profile.set_preference("browser.download.manager.showWhenStarting", False)
