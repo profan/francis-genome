@@ -13,11 +13,11 @@ fasta_job_output_regex = re.compile(r"'(\d+)'")
 
 parser = argparse.ArgumentParser(description='Batch upload a directory of fasta files.')
 parser.add_argument(
-    '--username', metavar='username', type=str,
+    '--username', metavar='username', type=str, required=True,
     help='your login username'
 )
 parser.add_argument(
-    '--password', metavar='password', type=str,
+    '--password', metavar='password', type=str, required=True,
     help='your login password'
 )
 parser.add_argument(

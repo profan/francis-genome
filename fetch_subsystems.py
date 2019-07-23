@@ -58,15 +58,15 @@ def collect_job_ids_from_csv(job_csv_file_path):
 
 parser = argparse.ArgumentParser(description='Fetches all feature subsystem data for a given job.')
 parser.add_argument(
-    '--username', metavar='username', type=str,
+    '--username', metavar='username', type=str, required=True,
     help='your login username'
 )
 parser.add_argument(
-    '--password', metavar='password', type=str,
+    '--password', metavar='password', type=str, required=True,
     help='your login password'
 )
 parser.add_argument(
-    '--filename', metavar='filename', type=str,
+    '--filename', metavar='filename', type=str, required=True,
     help='csv with submitted jobs'
 )
 
