@@ -121,3 +121,5 @@ for i, job_id in enumerate(all_job_ids):
     genome_url = extract_genome_url_for_job_id(driver, job_id)
     extract_subsystem_data(driver, genome_url)
     print("[fetch_subsystems] downloaded table for %d of %d" % (i + 1, len(all_job_ids)))
+
+driver.quit()
