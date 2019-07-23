@@ -55,6 +55,7 @@ def collect_job_ids_from_csv(job_csv_file_path):
         for row in reader:
             if row['success'] == 'True':
                 job_ids.append(row['job_id'])
+    return job_ids
 
 parser = argparse.ArgumentParser(description='Fetches all feature subsystem data for a given job.')
 parser.add_argument(
