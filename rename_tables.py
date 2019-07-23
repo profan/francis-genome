@@ -41,6 +41,6 @@ for path in tsv_files:
             new_file_name = stripped_fig + "_features" + ".tsv"
             print("[rename_tables] rename %s to %s" % (path, new_file_name))
             if args.no_simulate:
-                os.rename(path, stripped_fig + ".tsv")
+                os.rename(path, new_file_name)
         else:
             print("[rename_tables] %s had no features?" % path)
