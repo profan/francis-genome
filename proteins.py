@@ -52,7 +52,10 @@ for entry in files:
                     fig = row['figfam']
                     proteins.add(fig)
                     # registry of proteins in set
-                    all_protein_data[fig] = {'function' : row['function']}
+                    if fig in all_protein_data:
+                        all_protein_data[fig]['feature_id'].append(row['feature_id'])
+                    else:
+                        all_protein_data[fig] = {'function' : row['function'], 'feature_id' : [row['feature_id']]}
                 else:
                     skipped_entries += 1
             if contig_id in all_genome_ids:
