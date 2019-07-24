@@ -12,6 +12,9 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 
+# our utils
+import util
+
 base_url = "https://rast.nmpdr.org/"
 login_url = "https://rast.nmpdr.org/rast.cgi"
 download_url = "https://rast.nmpdr.org/download.cgi"
@@ -46,15 +49,6 @@ def extract_subsystem_data(driver, url):
         if export_button.is_displayed():
             are_we_ready = True
     export_button.click()
-
-def collect_job_ids_from_csv(job_csv_file_path):
-    job_ids = []
-    with open(job_csv_file_path, 'r') as csvfile:
-        reader = csv.DictReader(csvfile) # fieldnames=['job_id', 'file_name', 'success']
-        for row in reader:
-            if row['success'] == 'True':
-                job_ids.append(row['job_id'])
-    return job_ids
 
 parser = argparse.ArgumentParser(description='Fetches all feature subsystem data for a given job.')
 parser.add_argument(
@@ -91,7 +85,7 @@ profile.set_preference("browser.download.panel.shown", False)
 driver = webdriver.Firefox(desired_capabilities=capabilities, firefox_profile=profile)
 login_to_rast_selenium(driver, args.username, args.password)
 
-all_job_ids = collect_job_ids_from_csv(args.filename)
+all_job_ids = util.collect_job_ids_from_csv(args.filename)
 print("[fetch_subsystems] got %d job ids to fetch" % len(all_job_ids))
 
 for i, job_id in enumerate(all_job_ids):

@@ -2,6 +2,9 @@ import os
 import csv
 import argparse
 
+# our utils
+import util
+
 parser = argparse.ArgumentParser(description='Fetches all feature subsystem data for a given job.')
 parser.add_argument(
     '--data-dir', metavar='data_dir', type=str, default=os.getcwd(),
@@ -15,18 +18,10 @@ parser.add_argument(
 args = parser.parse_args()
 os.chdir(args.data_dir)
 
-def get_files_in_folder(extension):
-    paths = []
-    for entry in os.listdir():
-        name, ext = os.path.splitext(entry)
-        if os.path.isfile(entry) and ext == extension:
-            paths.append(entry)
-    return paths
-
 def parse_fig(fig):
     return fig.strip("fig|").split(".peg.")[0]
 
-tsv_files = get_files_in_folder(".tsv")
+tsv_files = util.get_files_in_folder_with_ext(".tsv")
 for path in tsv_files:
     with open(path, 'r') as csvfile:
         name, ext = os.path.splitext(path)

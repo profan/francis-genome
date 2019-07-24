@@ -2,16 +2,12 @@ import os
 import csv
 import argparse
 
+# our utils
+import util
+
 # contig id may look like 58282 but also 28582_5929_etc
 def get_leading_id(s):
     return s.split("_", 1)[0]
-
-def create_output_directory_if_not_exists(cwd):
-    output_dir_path = os.path.join(cwd, 'output')
-    if os.path.exists(output_dir_path) and os.path.isfile(output_dir_path):
-        raise Exception("output exists but is a file, expected output to be a directory!")
-    elif not os.path.exists(output_dir_path):
-        os.mkdir(output_dir_path)
 
 parser = argparse.ArgumentParser(description='Calculates proteins common to all genomes in directory, outputting a spreadsheet for the proteins common to all genomes and a spreadsheet which holds all the proteins unique to each genome, marked with which genome to which they are unique, if any.')
 parser.add_argument(
@@ -22,55 +18,52 @@ parser.add_argument(
 args = parser.parse_args()
 cur_dir = os.getcwd()
 
-# workaround
-os.chdir(args.directory)
-files = os.listdir()
-
 # first collect all proteins associated with each file
 all_genome_ids = {}
 all_protein_data = {}
 skipped_entries = 0
 total_entries = 0
 
+os.chdir(args.directory)
+csv_files = util.get_files_in_folder_with_ext(".csv")
+
 data_files = []
-for entry in files:
-    filename, file_ext = os.path.splitext(entry)
-    if os.path.isfile(entry) and file_ext == '.csv':
-        with open(entry) as csvfile:
-            reader = csv.DictReader(csvfile)
-            proteins = set() # to automatically eliminate duplicates
-            have_fetched_contig_id = False
-            contig_id = -1
-            for row in reader:
-                # keep track of total number of entries
-                total_entries += 1
-                if not have_fetched_contig_id:
-                    have_fetched_contig_id = True
-                    contig_id = get_leading_id(row['contig_id'])
-                # we only care about the row if it has a figfam entry, and it is nonempty
-                if 'figfam' in row and not row['figfam'].isspace() and not row['figfam'] == "":
-                    fig = row['figfam']
-                    proteins.add(fig)
-                    # registry of proteins in set
-                    if fig in all_protein_data:
-                        all_protein_data[fig]['feature_id'].append(row['feature_id'])
-                    else:
-                        all_protein_data[fig] = {'function' : row['function'], 'feature_id' : [row['feature_id']]}
+for entry in csv_files:
+    with open(entry) as csvfile:
+        reader = csv.DictReader(csvfile)
+        proteins = set() # to automatically eliminate duplicates
+        have_fetched_contig_id = False
+        contig_id = -1
+        for row in reader:
+            # keep track of total number of entries
+            total_entries += 1
+            if not have_fetched_contig_id:
+                have_fetched_contig_id = True
+                contig_id = get_leading_id(row['contig_id'])
+            # we only care about the row if it has a figfam entry, and it is nonempty
+            if 'figfam' in row and not row['figfam'].isspace() and not row['figfam'] == "":
+                fig = row['figfam']
+                proteins.add(fig)
+                # registry of proteins in set
+                if fig in all_protein_data:
+                    all_protein_data[fig]['feature_id'].append(row['feature_id'])
                 else:
-                    skipped_entries += 1
-            if contig_id in all_genome_ids:
-                prev_file_name = all_genome_ids[contig_id]['file_name']
-                raise Exception("found duplicate id: %s in %s, previously encountered in file: %s" % (contig_id, entry, prev_file_name))
+                    all_protein_data[fig] = {'function' : row['function'], 'feature_id' : [row['feature_id']]}
             else:
-                all_genome_ids[contig_id] = {'file_name' : entry}
-                data_files.append({'file_name' : entry, 'contig_id' : contig_id, 'proteins' : proteins})
+                skipped_entries += 1
+        if contig_id in all_genome_ids:
+            prev_file_name = all_genome_ids[contig_id]['file_name']
+            raise Exception("found duplicate id: %s in %s, previously encountered in file: %s" % (contig_id, entry, prev_file_name))
+        else:
+            all_genome_ids[contig_id] = {'file_name' : entry}
+            data_files.append({'file_name' : entry, 'contig_id' : contig_id, 'proteins' : proteins})
 
 # check that our data is now nonempty, else there were no data files in directory
 if len(data_files) == 0:
     raise Exception("expected at least one data file in %s to read from! got none." % args.directory)
 
 # if output directory does not exist, create it
-create_output_directory_if_not_exists(cur_dir)
+util.create_output_directory_if_not_exists(cur_dir)
 
 # accumulate all proteins into a big list first
 all_proteins = []

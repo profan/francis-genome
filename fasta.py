@@ -6,6 +6,9 @@ import argparse
 import shutil
 import re
 
+# our utils
+import util
+
 path_to_submit_fasta_cmd = shutil.which("svr_submit_RAST_job")
 submit_fasta_job_cmd = " --domain Bacteria --user %s --passwd %s --fasta %s"
 absolute_cmd_path = path_to_submit_fasta_cmd + submit_fasta_job_cmd
@@ -25,12 +28,6 @@ parser.add_argument(
     help='the directory with the fasta (.fa) files in it to upload'
 )
 
-def create_output_dir_if_not_exists():
-    if os.path.exists('output') and os.path.isfile('output'):
-        raise Error("[batch] output exists but is file, expected directory!")
-    elif not os.path.exists('output'):
-        os.mkdir('output')
-
 def write_job_id_to_file(job_id, file_name, success):
     output_filename = 'output/submitted_jobs.csv'
     if not os.path.exists(output_filename):
@@ -45,16 +42,9 @@ def write_job_id_to_file(job_id, file_name, success):
             our_writer = csv.writer(csvfile)
             our_writer.writerow([job_id, file_name, success])
 
-def get_files_for_jobs_in_folder(extension):
-    paths = []
-    for entry in os.listdir():
-        if os.path.isfile(entry) and entry.endswith(extension):
-            paths.append(entry)
-    return paths
-
 def submit_fasta_files_in_dir(username, password, directory):
     os.chdir(args.directory)
-    all_job_paths = get_files_for_jobs_in_folder(".fa")
+    all_job_paths = util.get_files_in_folder_with_ext(".fa")
     total_jobs_in_folder = len(all_job_paths)
     print("[batch] total jobs to submit: %d at: %s" % (total_jobs_in_folder, datetime.datetime.now()))
     total_successful_jobs = 0
@@ -76,5 +66,5 @@ def submit_fasta_files_in_dir(username, password, directory):
     print("[batch] finished at %s" % datetime.datetime.now())
 
 args = parser.parse_args()
-create_output_dir_if_not_exists()
+util.create_output_directory_if_not_exists()
 submit_fasta_files_in_dir(args.username, args.password, args.directory)
