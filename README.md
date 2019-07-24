@@ -3,7 +3,7 @@ francis-genome
 
 ## tools
 
-# fasta.py
+# fasta_submit_bacteria.py
 Batch uploads all the `.fa` files in a directory you provide to RAST, or the current working directory if none is provided, will write all job ids and the file with which a given job was related to to a file in an `output` directory relative to the current working directory. (this tool may be slightly useless, given RASTtk's existence)
 
 # proteins.py
