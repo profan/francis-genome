@@ -21,29 +21,6 @@ login_headers = {
     'User-Agent': 'Mozilla/5.0'
 }
 
-def login_to_rast(username, password):
-
-    login_payload = {
-        'login' : username,
-        'password' : password,
-        'action' : 'perform_login'
-    }
-
-    s = requests.Session()
-    p = s.post(login_url, data=login_payload)
-
-    page_has_login = (p.text.find("Login") != -1)
-    page_has_pass = (p.text.find("Password") != - 1)
-    page_contains_login_and_password = page_has_login and page_has_pass
-
-    if page_contains_login_and_password:
-        print("[fetch_subsystems] login failed, exiting!")
-        exit()
-    else:
-        print("[fetch_subsystems] login successful at [%s]" % datetime.datetime.now())
-
-    return s
-
 def login_to_rast_selenium(driver, username, password):
     driver.get(login_url)
     userfield = driver.find_element_by_name("login")
