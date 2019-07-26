@@ -46,9 +46,14 @@ for entry in csv_files:
                 proteins.add(fig)
                 # registry of proteins in set
                 if fig in all_protein_data:
-                    all_protein_data[fig]['feature_id'].append(row['feature_id'])
+                    all_protein_data[fig]['feature_ids'].append(row['feature_id'])
+                    all_protein_data[fig]['contig_ids'].append(contig_id)
                 else:
-                    all_protein_data[fig] = {'function' : row['function'], 'feature_id' : [row['feature_id']]}
+                    all_protein_data[fig] = {
+                        'function' : row['function'],
+                        'feature_ids' : [row['feature_id']],
+                        'contig_ids' : [contig_id]
+                    }
             else:
                 skipped_entries += 1
         if contig_id in all_genome_ids:
@@ -171,3 +176,18 @@ with open(stats_file_path, 'w') as csvfile:
     writer.writerow(['Filename', 'Genome', 'Unique Proteins'])
     for (file_name, (contig_id, proteins)) in unique_proteins.items():
         writer.writerow([file_name, contig_id, len(proteins)])
+
+# also output _all proteins_ so we can do this same analysis in the browser (or well, most of it)
+all_file_path = os.path.join(cur_dir, 'output/all_proteins.csv')
+with open(all_file_path, 'w') as csvfile:
+    print("[protein] wrote all proteins to: %s (%d proteins)" % (all_file_path, len(all_protein_data)))
+    writer = csv.DictWriter(csvfile, dialect="excel", fieldnames=['figfam', 'function', 'feature_ids', 'contig_ids'])
+    for fig in all_protein_data:
+        cur_fig_data = all_protein_data[fig]
+        cur_feature_ids = ';'.join(cur_fig_data['feature_ids'])
+        cur_contig_ids = ';'.join(cur_fig_data['contig_ids'])
+        writer.writerow({
+            'figfam' : fig,
+            'function' : cur_feature_ids,
+            'feature_ids' : cur_contig_ids
+        })
