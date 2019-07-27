@@ -182,12 +182,14 @@ all_file_path = os.path.join(cur_dir, 'output/all_proteins.csv')
 with open(all_file_path, 'w') as csvfile:
     print("[protein] wrote all proteins to: %s (%d proteins)" % (all_file_path, len(all_protein_data)))
     writer = csv.DictWriter(csvfile, dialect="excel", fieldnames=['figfam', 'function', 'feature_ids', 'contig_ids'])
+    writer.writeheader()
     for fig in all_protein_data:
         cur_fig_data = all_protein_data[fig]
         cur_feature_ids = ';'.join(cur_fig_data['feature_ids'])
         cur_contig_ids = ';'.join(cur_fig_data['contig_ids'])
         writer.writerow({
             'figfam' : fig,
-            'function' : cur_feature_ids,
-            'feature_ids' : cur_contig_ids
+            'function' : cur_fig_data['function'],
+            'feature_ids' : cur_feature_ids,
+            'contig_ids' : cur_contig_ids
         })
