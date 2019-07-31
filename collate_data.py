@@ -26,6 +26,7 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
+cur_dir = os.getcwd()
 
 protein_data = {}
 
@@ -54,12 +55,18 @@ with open(all_proteins_file, 'r') as csvfile:
             feature_id_to_fig_mapping[f] = figfam_id
 
 
+os.chdir(args.subsystems_dir)
 files_in_subsystems_dir = util.get_files_in_folder_with_ext(".tsv")
+print("[collate_data] got: %d files with subsystems data to process..." % len(files_in_subsystems_dir))
+
+skipped_rows = 0
+processed_rows = 0
 for entry in files_in_subsystems_dir:
 
     with open(entry, 'r') as csvfile:
 
         reader = csv.DictReader(csvfile, delimiter='\t')
+        skipped_rows = 0
 
         for row in reader:
 
@@ -69,21 +76,28 @@ for entry in files_in_subsystems_dir:
             role = row['Role']
 
             features = [f.strip() for f in row['Features'].split(",")]
-            figfam_id = feature_id_to_fig_mapping[features[0]]
+            if features[0] not in feature_id_to_fig_mapping:
+                skipped_rows += 1
+                continue
+            else:
+                processed_rows += 1
+                figfam_id = feature_id_to_fig_mapping[features[0]]
 
-            category_data = {
-                'category' : category,
-                'subcategory' : subcategory,
-                'subsystem' : subsystem,
-                'role' : role
-            }
+            # append our category data
+            data = all_protein_data[figfam_id]
+            data['category'] = category
+            data['subcategory'] = subcategory
+            data['subsystem'] = subsystem
+            data['role'] = role
 
-            all_protein_data[figfam_id] = {
-                **all_protein_data[figfam_id],
-                **category_data
-            }
+            all_protein_data[figfam_id] = data
 
-output_file_path = os.path.join(os.getcwd(), 'output/proteins.json')
+total_rows = skipped_rows + processed_rows
+total_percentage_skipped = (skipped_rows / float(total_rows)) * 100.0
+print("[collate_data] skipped %d rows from total of %d entries, skipped %f procent" \
+      % (skipped_rows, total_rows, total_percentage_skipped))
+
+output_file_path = os.path.join(cur_dir, 'output/proteins.json')
 with open(output_file_path, 'w') as f:
     json.dump(all_protein_data, f)
     print("[collate_data] wrote data with %d proteins to: %s" % (len(all_protein_data), output_file_path))
