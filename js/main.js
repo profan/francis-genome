@@ -11,8 +11,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
         height: 320
     };
 
-    function set_of_property(obj, property) {
-        return d3.set(Object.values(obj).flatMap(x => x[property]).filter(x => typeof x === 'string'));
+    function set_of_property(arr, property) {
+        return d3.set(arr.flatMap(x => x[property]).filter(x => typeof x === 'string'));
     }
     
     d3.json("data/proteins.json").then(function(data) {
@@ -21,13 +21,14 @@ document.addEventListener("DOMContentLoaded", function(event) {
             data[key].fig = key;
         }
 
-        let categories = set_of_property(data, 'category');
-        let subcategories = set_of_property(data, 'subcategory');
-        let subsystems = set_of_property(data, 'subsystem');
-        let roles = set_of_property(data, 'role');
+        let sliced_arr = Object.values(data).slice(0, 100);
+        let categories = set_of_property(sliced_arr, 'category');
+        let subcategories = set_of_property(sliced_arr, 'subcategory');
+        let subsystems = set_of_property(sliced_arr, 'subsystem');
+        let roles = set_of_property(sliced_arr, 'role');
 
-        let genes = set_of_property(data, 'contig_ids');
-        let figfams = set_of_property(data, 'fig');
+        let genes = set_of_property(sliced_arr, 'contig_ids');
+        let figfams = set_of_property(sliced_arr, 'fig');
 
         let label_font_size = 12
         let necessary_height = figfams.size() * label_font_size
@@ -99,7 +100,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         
         let mousemove = function (d) {
             tooltip
-                .html("The exact value of<br>this cell is: " + d.fig)
+                .html("The exact value of<br>this cell is: " + d.fig + ":" + d.contig_id)
                 .style("left", (d3.mouse(this)[0] + 70) + "px")
                 .style("top", (d3.mouse(this)[1]) + "px")
         }
@@ -116,8 +117,28 @@ document.addEventListener("DOMContentLoaded", function(event) {
             return p.contig_ids.includes(contig_id);
         }
         
-        let augmented_data = Object.values(data).flatMap(function(e) {
+        let augmented_data = sliced_arr.flatMap(function(e) {
             return e.contig_ids.map(function (c) {
+                return {
+                    fig: e.fig, contig_id: c
+                };
+            });
+        });
+
+        let deduplicated_data = {};
+        augmented_data.forEach(function (e) {
+            if (e.fig in deduplicated_data) {
+                deduplicated_data[e.fig].contig_ids.add(e.contig_id);
+            } else {
+                deduplicated_data[e.fig] = {
+                    fig: e.fig,
+                    contig_ids : new Set([e.contig_id])
+                };
+            }
+        });
+
+        let returned_data = Object.values(deduplicated_data).flatMap(function(e) {
+            return Array.from(e.contig_ids.values()).map(function (c) {
                 return {
                     fig: e.fig, contig_id: c
                 };
@@ -128,9 +149,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
         console.log("necessary height: " + necessary_height);
 
         // add the squares
-        /*
         svg.selectAll()
-            .data(augmented_data, function (d) { return d.fig; })
+            .data(returned_data, function (d) { return d.fig; })
             .enter()
             .append("rect")
                 .attr("x", function (d) { return x(d.contig_id) })
@@ -146,7 +166,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
             .on("mouseover", mouseover)
             .on("mousemove", mousemove)
             .on("mouseleave", mouseleave);
-        */
 
         console.log("number of genes: " + genes.size());
         console.log("number of figfams: " + figfams.size());
