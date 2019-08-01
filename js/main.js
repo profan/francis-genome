@@ -27,14 +27,14 @@ document.addEventListener("DOMContentLoaded", function(event) {
         let genes = set_of_property(data, 'contig_ids');
         let figfams = set_of_property(data, 'fig');
 
-        let label_font_size = 15
+        let label_font_size = 12
         let necessary_height = figfams.size() * label_font_size
         let necessary_width = genes.size() * label_font_size
 
         dims.height = necessary_height
         dims.width = necessary_width
 
-        margins.left = figfams.values().reduce((a, c) => (c.length > a.length) ? c : a).length * (label_font_size/2);
+        margins.left = figfams.values().reduce((a, c) => (c.length > a.length) ? c : a).length * (label_font_size);
         let start_x = 0;
         console.log("got start_x: " + start_x);
 
@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             .attr("transform", "translate(" + start_x + "," + dims.height + ")")
             .call(d3.axisBottom(x).tickSize(0))
             .selectAll("text")
-                .attr("transform", "rotate(90) translate(5, -5)") /* necessary for text to not overlap with edge of axis line */
+                .attr("transform", "rotate(90) translate(5, -6)") /* necessary for text to not overlap with edge of axis line */
                 .style("text-anchor", "start")
                 .attr("class", "x-axis")
             .select(".domain").remove();
@@ -83,7 +83,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
             .style("border-width", "2px")
             .style("border-radius", "5px")
             .style("padding", "5px");
-
 
         // Three function that change the tooltip when user hover / move / leave a cell
         let mouseover = function (d) {
@@ -113,18 +112,26 @@ document.addEventListener("DOMContentLoaded", function(event) {
             return p.contig_ids.includes(contig_id);
         }
         
+        let augmented_data = Object.values(data).flatMap(function(e) {
+            return e.contig_ids.map(function (c) {
+                return {
+                    fig: e.fig, contig_id: c
+                };
+            });
+        });
+
         // add the squares
         svg.selectAll()
-            .data(data, function (d) { console.log(d); return d.fig; })
+            .data(augmented_data, function (d) { return d.fig; })
             .enter()
             .append("rect")
-                .attr("x", function (d) { return x(d.group) })
-                .attr("y", function (d) { return y(d.variable) })
+                .attr("x", function (d) { return x(d.contig_id) })
+                .attr("y", function (d) { return y(d.fig) })
                 .attr("rx", 4)
                 .attr("ry", 4)
                 .attr("width", x.bandwidth())
                 .attr("height", y.bandwidth())
-                .style("fill", function (d) { return protein_belongs_to_genome(d.group, d.variable); })
+                .style("fill", function (d) { return 1; })
                 .style("stroke-width", 4)
                 .style("stroke", "none")
                 .style("opacity", 0.8)
