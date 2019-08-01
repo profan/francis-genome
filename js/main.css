@@ -1,0 +1,41 @@
+body {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+aside {
+    width: 180px;
+    font-size: small;
+    text-align: center;
+    padding-left: 10px;
+    position: absolute;
+    right: -90px;
+}
+
+.flex-grid {
+    display: flex;
+}
+
+.column {
+    padding: 15px;
+    padding-top: 5px;
+    flex: 1;
+}
+
+.content {
+    position: relative;
+    margin: auto;
+    width: 75%;
+}
+
+.input-filter {
+
+}
+
+.x-axis {
+    margin-left: 5px;
+}
+
+.y-axis {
+    text-anchor: end;
+    text-align: left;
+}
