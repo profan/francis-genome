@@ -1,3 +1,5 @@
+"use strict";
+
 document.addEventListener("DOMContentLoaded", function(event) {
 
     let margins = {
@@ -34,7 +36,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         dims.height = necessary_height
         dims.width = necessary_width
 
-        margins.left = figfams.values().reduce((a, c) => (c.length > a.length) ? c : a).length * (label_font_size);
+        margins.left = figfams.values().reduce((a, c) => (c.length > a.length) ? c : a).length * (label_font_size*0.65);
         let start_x = 0;
         console.log("got start_x: " + start_x);
 
