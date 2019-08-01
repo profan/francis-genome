@@ -21,6 +21,7 @@ cur_dir = os.getcwd()
 # first collect all proteins associated with each file
 all_genome_ids = {}
 all_protein_data = {}
+skipped_entries_with_figs = 0
 skipped_entries = 0
 total_entries = 0
 
@@ -42,6 +43,11 @@ for entry in csv_files:
                 contig_id = get_leading_id(row['contig_id'])
             # we only care about the row if it has a figfam entry, and it is nonempty
             if 'figfam' in row and not row['figfam'].isspace() and not row['figfam'] == "":
+
+                if 'hypothetical' in row['function']:
+                    skipped_entries_with_figs +=1
+                    continue
+
                 fig = row['figfam']
                 proteins.add(fig)
                 # registry of proteins in set
@@ -56,6 +62,7 @@ for entry in csv_files:
                     }
             else:
                 skipped_entries += 1
+
         if contig_id in all_genome_ids:
             prev_file_name = all_genome_ids[contig_id]['file_name']
             raise Exception("found duplicate id: %s in %s, previously encountered in file: %s" % (contig_id, entry, prev_file_name))
@@ -83,7 +90,12 @@ all_unique_proteins = set.union(*all_proteins)
 all_common_proteins = set.intersection(*all_proteins)
 
 percentage_skipped = (skipped_entries / total_entries) * 100
-print("[protein] total skipped entries: %d (%d %% of total)" % (skipped_entries, percentage_skipped))
+percentage_skipped_with_figs = (skipped_entries / total_entries) * 100
+total_entries_skipped = skipped_entries + skipped_entries_with_figs
+total_percentage_skipped = percentage_skipped_with_figs + percentage_skipped
+print("[protein] skipped entries (no figs): %d (%d %% of total)" % (skipped_entries, percentage_skipped))
+print("[protein] skipped entries (hypotheticals with figs): %d (%d %% of total)" % (skipped_entries_with_figs, percentage_skipped_with_figs))
+print("[protein] total skipped entries: %d (%d %% of total)" % (total_entries_skipped, total_percentage_skipped))
 print("[protein] total unique proteins: %d" % (len(all_unique_proteins)))
 print("[protein] total common proteins: %d" % (len(all_common_proteins)))
 
