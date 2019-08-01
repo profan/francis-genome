@@ -45,9 +45,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
             .append("g")
                 .attr("transform", "translate(" + margins.left + "," + margins.top + ")");
 
+        let genes_sorted = genes.values().sort(d3.descending)
         let x = d3.scaleBand()
             .range([0, dims.width])
-            .domain(genes.values())
+            .domain(genes_sorted)
             .padding(0.05); /* is this good? */
 
         svg.append("g")
@@ -60,9 +61,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 .attr("class", "x-axis")
             .select(".domain").remove();
         
+        let figfams_sorted = figfams.values().sort(d3.descending)
         let y = d3.scaleBand()
             .range([dims.height, 0])
-            .domain(figfams.values())
+            .domain(figfams_sorted)
             .padding(0.05);
         
         svg.append("g")
@@ -120,7 +122,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
             });
         });
 
+        console.log("number of datapoints: " + augmented_data.length);
+        console.log("necessary height: " + necessary_height);
+
         // add the squares
+        /*
         svg.selectAll()
             .data(augmented_data, function (d) { return d.fig; })
             .enter()
@@ -138,6 +144,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             .on("mouseover", mouseover)
             .on("mousemove", mousemove)
             .on("mouseleave", mouseleave);
+        */
 
         console.log("number of genes: " + genes.size());
         console.log("number of figfams: " + figfams.size());
