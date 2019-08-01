@@ -46,9 +46,11 @@ with open(all_proteins_file, 'r') as csvfile:
         figfam_id = row['figfam']
         functions_list = [f.strip() for f in row['function'].split(";")]
         features_list = [f.strip() for f in row['feature_ids'].split(";")]
+        contigs_list = [c.strip() for c in row['contig_ids'].split(";")]
         all_protein_data[figfam_id] = {
             'functions' : functions_list,
-            'feature_ids' : features_list
+            'feature_ids' : features_list,
+            'contig_ids' : contigs_list
         }
 
         for f in features_list:
