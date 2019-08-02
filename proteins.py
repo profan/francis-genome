@@ -28,23 +28,34 @@ total_entries = 0
 os.chdir(args.directory)
 csv_files = util.get_files_in_folder_with_ext(".csv")
 
+
 data_files = []
 for entry in csv_files:
     with open(entry) as csvfile:
+
+        def has_valid_figfam_id(p):
+            return 'figfam' in p and not p['figfam'].isspace() and not p['figfam'] == ""
+
+        def is_hypothetical_protein(p):
+            return 'hypothetical' in p['function']
+
         reader = csv.DictReader(csvfile)
         proteins = set() # to automatically eliminate duplicates
         have_fetched_contig_id = False
         contig_id = -1
+
         for row in reader:
+
             # keep track of total number of entries
             total_entries += 1
             if not have_fetched_contig_id:
                 have_fetched_contig_id = True
                 contig_id = get_leading_id(row['contig_id'])
-            # we only care about the row if it has a figfam entry, and it is nonempty
-            if 'figfam' in row and not row['figfam'].isspace() and not row['figfam'] == "":
 
-                if 'hypothetical' in row['function']:
+            # we only care about the row if it has a figfam entry, and it is nonempty
+            if has_valid_figfam_id(row):
+
+                if is_hypothetical_protein(row):
                     skipped_entries_with_figs +=1
                     continue
 
