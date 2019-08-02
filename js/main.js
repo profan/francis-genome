@@ -276,41 +276,75 @@ document.addEventListener("DOMContentLoaded", function(event) {
         update_ranges(initial_start_offset + initial_offset, initial_end_offset + initial_offset, sliced_arr.length);
 
         // populate filters...
-        let data_category = d3.select("#data-category")
+        let data_category = d3.select("#data-category");
         let data_subcategory = d3.select("#data-subcategory");
         let data_subsystem = d3.select("#data-subsystem");
         let data_role = d3.select("#data-role");
 
-        categories.values().sort(d3.ascending).forEach(function(c) {
-            data_category.append("li")
-                .append("button")
-                    .text(c);
-        });
+        let data_category_searchbox = d3.select("#data-category-search");
+        let data_subcategory_searchbox = d3.select("#data-subcategory-search");
+        let data_subsystem_searchbox = d3.select("#data-subsystem-search");
+        let data_role_searchbox = d3.select("#data-role-search");
+        
+        let data_active_filters = d3.select("#data-active-filters");
 
-        subcategories.values().sort(d3.ascending).forEach(function(c) {
-            data_subcategory.append("li")
-                .append("button")
-                    .text(c);
-        });
+        const filters = [
+            {
+                set: categories,
+                prefix: "category",
+                container: data_category,
+                searchbox: data_category_searchbox,
+                active_filters: active_filters.categories
+            },
+            {
+                set: subcategories,
+                prefix: "subcategory",
+                container: data_subcategory,
+                searchbox: data_subcategory_searchbox,
+                active_filters: active_filters.subcategories
+            },
+            {
+                set: subsystems,
+                prefix: "subsystem",
+                container: data_subsystem,
+                searchbox: data_subsystem_searchbox,
+                active_filters: active_filters.subsystems
+            },
+            {
+                set: roles,
+                prefix: "role",
+                container: data_role,
+                searchbox: data_role_searchbox,
+                active_filters: active_filters.roles
+            }
+        ];
+        
+        for (let cur of filters) {
 
-        subsystems.values().sort(d3.ascending).forEach(function(s) {
-            data_subsystem.append("li")
+            let i = 0;
+            cur.set.values().sort(d3.ascending).forEach(function(v) {
+                cur.container.append("li")
+                    .attr("id", cur.prefix + i)
                 .append("button")
-                    .text(s);
-        });
-
-        roles.values().sort(d3.ascending).forEach(function(r) {
-            data_role.append("li")
-                .append("button")
+                    .attr("class", i)
                     .on("click", function(e) { 
-                        if (active_filters.has(r)) {
-                            active_filters.roles.remove(r);
+                        if (cur.active_filters.has(v)) {
+                            let self = this;
+                            d3.select(this).remove();
+                            d3.select("#" + cur.prefix + self.getAttribute("class")).append(() => self); /* HACK */
+                            cur.active_filters.remove(v);
                         } else {
-                            active_filters.roles.add(r);
+                            let self = this;
+                            d3.select(this).remove();
+                            d3.select("#data-active-filters").append(() => self);
+                            cur.active_filters.add(v);
                         }
                     })
-                    .text(r);
-        });
+                    .text(v);
+                i += 1;
+            });
+
+        }
 
         d3.select("#data-range-offset-input").on("input", function() {
 
@@ -364,18 +398,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
             update_ranges(start_offset, end_offset, num_entries);
 
         });
-        
-        const filters = [
-            {searchbox: "#data-category-search", container: "#data-category"},
-            {searchbox: "#data-subcategory-search", container: "#data-subcategory"},
-            {searchbox: "#data-subsystem-search", container: "#data-subsystem"},
-            {searchbox: "#data-role-search", container: "#data-role"}
-        ];
 
         for (let criteria of filters) {
-            d3.select(criteria.searchbox).on("input", function() {
+            criteria.searchbox.on("input", function() {
                 let search_value = this.value;
-                d3.select(criteria.container).selectAll("li button").each(function(_, i) {
+                criteria.container.selectAll("li button").each(function(_, i) {
                     let e = this;
                     let search_rgx = new RegExp(search_value, 'i');
                     let new_value = e.innerText.search(search_rgx) !== -1;
