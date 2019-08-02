@@ -377,7 +377,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 let search_value = this.value;
                 d3.select(criteria.container).selectAll("li button").each(function(_, i) {
                     let e = this;
-                    let new_value = e.innerText.search(search_value) !== -1;
+                    let search_rgx = new RegExp(search_value, 'i');
+                    let new_value = e.innerText.search(search_rgx) !== -1;
                     e.parentElement.style.display = new_value ? "block" : "none";
                 });
             });
