@@ -12,6 +12,13 @@ document.addEventListener("DOMContentLoaded", function(event) {
         width: 320,
         height: 320
     };
+    
+    let active_filters = {
+        categories : d3.set(),
+        subcategories : d3.set(),
+        subsystems : d3.set(),
+        roles : d3.set()
+    };
 
     function set_of_property(arr, property) {
         return d3.set(arr.flatMap(x => x[property]).filter(x => typeof x === 'string'));
@@ -275,27 +282,33 @@ document.addEventListener("DOMContentLoaded", function(event) {
         let data_role = d3.select("#data-role");
 
         categories.values().sort(d3.ascending).forEach(function(c) {
-            data_category.append("ul")
+            data_category.append("li")
                 .append("button")
                     .text(c);
         });
 
         subcategories.values().sort(d3.ascending).forEach(function(c) {
-            data_subcategory.append("ul")
+            data_subcategory.append("li")
                 .append("button")
                     .text(c);
         });
 
         subsystems.values().sort(d3.ascending).forEach(function(s) {
-            data_subsystem.append("ul")
+            data_subsystem.append("li")
                 .append("button")
                     .text(s);
         });
 
         roles.values().sort(d3.ascending).forEach(function(r) {
-            data_role.append("ul")
+            data_role.append("li")
                 .append("button")
-                    // .onclick(function(e) {  })
+                    .on("click", function(e) { 
+                        if (active_filters.has(r)) {
+                            active_filters.roles.remove(r);
+                        } else {
+                            active_filters.roles.add(r);
+                        }
+                    })
                     .text(r);
         });
 
@@ -351,22 +364,24 @@ document.addEventListener("DOMContentLoaded", function(event) {
             update_ranges(start_offset, end_offset, num_entries);
 
         });
+        
+        const filters = [
+            {searchbox: "#data-category-search", container: "#data-category"},
+            {searchbox: "#data-subcategory-search", container: "#data-subcategory"},
+            {searchbox: "#data-subsystem-search", container: "#data-subsystem"},
+            {searchbox: "#data-role-search", container: "#data-role"}
+        ];
 
-        d3.select("#data-category-search").on("input", function() {
-
-        });
-
-        d3.select("#data-subcategory-search").on("input", function() {
-
-        });
-
-        d3.select("#data-subsystem-search").on("input", function() {
-
-        });
-
-        d3.select("#data-role-search").on("input", function() {
-
-        });
+        for (let criteria of filters) {
+            d3.select(criteria.searchbox).on("input", function() {
+                let search_value = this.value;
+                d3.select(criteria.container).selectAll("li button").each(function(_, i) {
+                    let e = this;
+                    let new_value = e.innerText.search(search_value) !== -1;
+                    e.parentElement.style.display = new_value ? "block" : "none";
+                });
+            });
+        }
 
         console.log("number of categories: " + categories.size());
         console.log("number of subcategories: " + subcategories.size());
