@@ -117,7 +117,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 
         let custom = d3.select("#data-graph").append("custom")
             .style("position", "absolute")
-            .style("z-index", 100)
             .style("margin-left", margins.left+"px")
             .style("margin-top", margins.top+"px")
             .attr("id", "custom");
