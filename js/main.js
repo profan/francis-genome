@@ -88,6 +88,25 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     }
 
+    function canvas_render(x, y, array) {
+
+        let cvs = document.getElementById('canvas');
+        let ctx = cvs.getContext('2d');
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'
+
+        array.forEach(function(e) {
+
+            let c_x = x(e.contig_id);
+            let c_y = y(e.fig);
+
+            ctx.fillRect(c_x+1, c_y+1, 10, 10);
+
+        });
+
+    }
+
     function create_from_data(array) {
 
         let genes = set_of_property(array, 'contig_ids');
@@ -95,6 +114,20 @@ document.addEventListener("DOMContentLoaded", function(event) {
         recalculate_dimensions(genes, figfams);
 
         margins.left = figfams.values().reduce((a, c) => (c.length > a.length) ? c : a).length * (label_font_size*0.65);
+                
+        let custom = d3.select("#data-graph").append("custom")
+            .style("position", "absolute")
+            .style("z-index", 100)
+            .style("margin-left", margins.left+"px")
+            .style("margin-top", margins.top+"px")
+            .attr("id", "custom");
+        
+        let cvs = document.createElement("canvas");
+        cvs.width = dims.width + margins.left + margins.right;
+        cvs.height = dims.height + margins.top + margins.bottom;
+        cvs.id = "canvas";
+
+        document.getElementById("custom").append(cvs);
 
         let svg = d3.select("#data-graph")
             .append("svg")
@@ -146,29 +179,14 @@ document.addEventListener("DOMContentLoaded", function(event) {
             .style("padding", "5px");
 
         let plot_data = deduplicate_data(array);
-        let plot = svg.selectAll("rect").data(plot_data, function(d) { return d.fig; });
 
         console.log("number of genes: " + genes.size());
         console.log("number of figfams: " + figfams.size());
         console.log("number of datapoints: " + plot_data.length);
         console.log("necessary height: " + dims.height);
 
-        // add the squares
-        plot.enter()
-            .append("rect")
-                .attr("x", function (d) { return x(d.contig_id) })
-                .attr("y", function (d) { return y(d.fig) })
-                .attr("rx", 4)
-                .attr("ry", 4)
-                .attr("width", x.bandwidth())
-                .attr("height", y.bandwidth())
-                .style("fill", function (d) { return 1; })
-                .style("stroke-width", 4)
-                .style("stroke", "none")
-                .style("opacity", 0.8)
-            .on("mouseover", on_mouse_over)
-            .on("mousemove", on_mouse_move)
-            .on("mouseleave", on_mouse_leave);
+        /* canvas stuff here? */
+        canvas_render(x, y, plot_data);
 
         // FIXME: this is a bit of a bodge.. like the rest is sort of
         d3.select("#data-total-entries").text(plot_data.length);
@@ -182,6 +200,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
         let genes = set_of_property(array, 'contig_ids');
         let figfams = set_of_property(array, 'fig');
         recalculate_dimensions(genes, figfams);
+
+        // update canvas size
+        let canvas = document.getElementById('canvas');
+        canvas.width = dims.width;
+        canvas.height = dims.height;
 
         // update svg size
         let top_level_svg = d3.select("#data-graph").select("svg");
@@ -212,27 +235,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
             .call(d3.axisLeft(y));
 
         let plot_data = deduplicate_data(array);
-        let plot = svg.selectAll("rect").data(plot_data, function(d) { return d.index; });
 
-        // add new squares
-        plot.enter()
-            .append("rect")
-                .attr("x", function (d) { return x(d.contig_id) })
-                .attr("y", function (d) { return y(d.fig) })
-                .attr("rx", 4)
-                .attr("ry", 4)
-                .attr("width", x.bandwidth())
-                .attr("height", y.bandwidth())
-                .style("fill", function (d) { return 1; })
-                .style("stroke-width", 4)
-                .style("stroke", "none")
-                .style("opacity", 0.8)
-            .on("mouseover", on_mouse_over)
-            .on("mousemove", on_mouse_move)
-            .on("mouseleave", on_mouse_leave);
-
-        // remove old squares
-        plot.exit().transition().remove();
+        /* canvas stuff here? */
+        canvas_render(x, y, plot_data);
 
         return plot_data.length;
 
@@ -250,10 +255,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
         
         let all_data_arr = Object.values(data).sort((a, b) => d3.ascending(a.fig, b.fig));
         all_data_arr.map((e) => ({fig: e.fig, contig_id: e.contig_id}));
-        
-        for (let i = 0; i < all_data_arr.length; ++i) {
-            all_data_arr[i].index = i;
-        }
 
         let sliced_arr = all_data_arr.slice(initial_start_offset + initial_offset, initial_end_offset + initial_offset);
 
