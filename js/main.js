@@ -116,41 +116,47 @@ document.addEventListener("DOMContentLoaded", function(event) {
         let protein_belongs_to_genome = function (p, contig_id) {
             return p.contig_ids.includes(contig_id);
         }
-        
-        let augmented_data = sliced_arr.flatMap(function(e) {
-            return e.contig_ids.map(function (c) {
-                return {
-                    fig: e.fig, contig_id: c
-                };
+
+        let deduplicate_data = function(slice) {
+
+            let augmented_data = slice.flatMap(function(e) {
+                return e.contig_ids.map(function (c) {
+                    return {
+                        fig: e.fig, contig_id: c
+                    };
+                });
             });
-        });
-
-        let deduplicated_data = {};
-        augmented_data.forEach(function (e) {
-            if (e.fig in deduplicated_data) {
-                deduplicated_data[e.fig].contig_ids.add(e.contig_id);
-            } else {
-                deduplicated_data[e.fig] = {
-                    fig: e.fig,
-                    contig_ids : new Set([e.contig_id])
-                };
-            }
-        });
-
-        let returned_data = Object.values(deduplicated_data).flatMap(function(e) {
-            return Array.from(e.contig_ids.values()).map(function (c) {
-                return {
-                    fig: e.fig, contig_id: c
-                };
+    
+            let deduplicated_data = {};
+            augmented_data.forEach(function (e) {
+                if (e.fig in deduplicated_data) {
+                    deduplicated_data[e.fig].contig_ids.add(e.contig_id);
+                } else {
+                    deduplicated_data[e.fig] = {
+                        fig: e.fig,
+                        contig_ids : new Set([e.contig_id])
+                    };
+                }
             });
-        });
+    
+            return Object.values(deduplicated_data).flatMap(function(e) {
+                return Array.from(e.contig_ids.values()).map(function (c) {
+                    return {
+                        fig: e.fig, contig_id: c
+                    };
+                });
+            });
+            
+        }
 
-        console.log("number of datapoints: " + augmented_data.length);
+        let plot_data = deduplicate_data(sliced_arr);
+
+        console.log("number of datapoints: " + plot_data.length);
         console.log("necessary height: " + necessary_height);
 
         // add the squares
         svg.selectAll()
-            .data(returned_data, function (d) { return d.fig; })
+            .data(plot_data, function (d) { return d.fig; })
             .enter()
             .append("rect")
                 .attr("x", function (d) { return x(d.contig_id) })
