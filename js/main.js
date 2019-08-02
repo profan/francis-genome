@@ -14,10 +14,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
     };
     
     let active_filters = {
-        categories : d3.set(),
-        subcategories : d3.set(),
-        subsystems : d3.set(),
-        roles : d3.set()
+        category : d3.set(),
+        subcategory : d3.set(),
+        subsystem : d3.set(),
+        role : d3.set()
     };
 
     function set_of_property(arr, property) {
@@ -198,6 +198,39 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     }
 
+    function update_with_filters(svg, x, y, array) {
+
+        let start_offset = +d3.select("#data-range-start-input").property("value");
+        let end_offset = +d3.select("#data-range-end-input").property("value");
+        
+        let filtered_data = array.filter(function (e) {
+
+            for (let type in active_filters) {
+                let filters = active_filters[type];
+                let found_match = false;
+                filters.each(function(filter) {
+                    // console.log(filter, e[type]);
+                    if (filter == e[type]) {
+                        found_match = true;
+                    }
+                });
+                if (found_match) {
+                    return true;
+                }
+            }
+
+        });
+
+        let fresh_slice = filtered_data.slice(start_offset, end_offset);
+        let total_num_entries = deduplicate_data(filtered_data).length;
+
+        let num_entries = update_from_data(svg, x, y, fresh_slice);
+        update_ranges(start_offset, end_offset, num_entries, total_num_entries);
+
+        return fresh_slice.length;
+
+    }
+
     function update_from_data(svg, x, y, array) {
 
         let genes = set_of_property(array, 'contig_ids');
@@ -246,10 +279,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     }
 
-    function update_ranges(new_start, new_end, num_entries) {
+    function update_ranges(new_start, new_end, num_entries, total_num_entries) {
         d3.select("#data-range-start").text(new_start);
         d3.select("#data-range-end").text(new_end);
-        d3.select("#data-total-entries").text(num_entries);
+        d3.select("#data-filtered-entries").text(num_entries);
+        d3.select("#data-total-entries").text(total_num_entries);
     }
     
     d3.json("data/proteins.json").then(function(data) {
@@ -273,7 +307,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         let roles = set_of_property(all_data_arr, 'role');
 
         let [svg, x, y] = create_from_data(sliced_arr);
-        update_ranges(initial_start_offset + initial_offset, initial_end_offset + initial_offset, sliced_arr.length);
+        update_with_filters(svg, x, y, all_data_arr); /* HACK */
 
         // populate filters...
         let data_category = d3.select("#data-category");
@@ -294,28 +328,28 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 prefix: "category",
                 container: data_category,
                 searchbox: data_category_searchbox,
-                active_filters: active_filters.categories
+                active_filters: active_filters.category
             },
             {
                 set: subcategories,
                 prefix: "subcategory",
                 container: data_subcategory,
                 searchbox: data_subcategory_searchbox,
-                active_filters: active_filters.subcategories
+                active_filters: active_filters.subcategory
             },
             {
                 set: subsystems,
                 prefix: "subsystem",
                 container: data_subsystem,
                 searchbox: data_subsystem_searchbox,
-                active_filters: active_filters.subsystems
+                active_filters: active_filters.subsystem
             },
             {
                 set: roles,
                 prefix: "role",
                 container: data_role,
                 searchbox: data_role_searchbox,
-                active_filters: active_filters.roles
+                active_filters: active_filters.role
             }
         ];
         
@@ -328,6 +362,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 .append("button")
                     .attr("class", i)
                     .on("click", function(e) { 
+
                         if (cur.active_filters.has(v)) {
                             let self = this;
                             d3.select(this).remove();
@@ -339,6 +374,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
                             d3.select("#data-active-filters").append(() => self);
                             cur.active_filters.add(v);
                         }
+
+                        update_with_filters(svg, x, y, all_data_arr); /* HACK */
+
                     })
                     .text(v);
                 i += 1;
@@ -359,9 +397,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             let start_offset = cur_start + (+this.value);
             let end_offset = cur_end + (+this.value);
             let fresh_slice = all_data_arr.slice(start_offset, end_offset);
-            let num_entries = update_from_data(svg, x, y, fresh_slice);
-
-            update_ranges(start_offset, end_offset, num_entries);
+            let num_entries = update_with_filters(svg, x, y, fresh_slice);
 
         });
 
@@ -376,9 +412,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             }
 
             let fresh_slice = all_data_arr.slice(start_offset, end_offset);
-            let num_entries = update_from_data(svg, x, y, fresh_slice);
-
-            update_ranges(start_offset, end_offset, num_entries);
+            let num_entries = update_with_filters(svg, x, y, fresh_slice);
 
         });
 
@@ -393,10 +427,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             }
             
             let fresh_slice = all_data_arr.slice(start_offset, end_offset);
-            let num_entries = update_from_data(svg, x, y, fresh_slice);
-
-            update_ranges(start_offset, end_offset, num_entries);
-
+            let num_entries = update_with_filters(svg, x, y, fresh_slice);
         });
 
         for (let criteria of filters) {
