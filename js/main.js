@@ -268,6 +268,37 @@ document.addEventListener("DOMContentLoaded", function(event) {
         let [svg, x, y] = create_from_data(sliced_arr);
         update_ranges(initial_start_offset + initial_offset, initial_end_offset + initial_offset, sliced_arr.length);
 
+        // populate filters...
+        let data_category = d3.select("#data-category")
+        let data_subcategory = d3.select("#data-subcategory");
+        let data_subsystem = d3.select("#data-subsystem");
+        let data_role = d3.select("#data-role");
+
+        categories.values().sort(d3.ascending).forEach(function(c) {
+            data_category.append("ul")
+                .append("button")
+                    .text(c);
+        });
+
+        subcategories.values().sort(d3.ascending).forEach(function(c) {
+            data_subcategory.append("ul")
+                .append("button")
+                    .text(c);
+        });
+
+        subsystems.values().sort(d3.ascending).forEach(function(s) {
+            data_subsystem.append("ul")
+                .append("button")
+                    .text(s);
+        });
+
+        roles.values().sort(d3.ascending).forEach(function(r) {
+            data_role.append("ul")
+                .append("button")
+                    // .onclick(function(e) {  })
+                    .text(r);
+        });
+
         d3.select("#data-range-offset-input").on("input", function() {
 
             if (this.value < 0) { this.value = 0; }
@@ -318,6 +349,22 @@ document.addEventListener("DOMContentLoaded", function(event) {
             let num_entries = update_from_data(svg, x, y, fresh_slice);
 
             update_ranges(start_offset, end_offset, num_entries);
+
+        });
+
+        d3.select("#data-category-search").on("input", function() {
+
+        });
+
+        d3.select("#data-subcategory-search").on("input", function() {
+
+        });
+
+        d3.select("#data-subsystem-search").on("input", function() {
+
+        });
+
+        d3.select("#data-role-search").on("input", function() {
 
         });
 
