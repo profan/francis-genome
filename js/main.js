@@ -146,7 +146,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             .style("padding", "5px");
 
         let plot_data = deduplicate_data(array);
-        let plot = svg.selectAll("rect").data(plot_data);
+        let plot = svg.selectAll("rect").data(plot_data, function(d) { return d.fig; });
 
         console.log("number of genes: " + genes.size());
         console.log("number of figfams: " + figfams.size());
@@ -209,7 +209,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             .call(d3.axisLeft(y));
 
         let plot_data = deduplicate_data(array);
-        let plot = svg.selectAll("rect").data(plot_data);
+        let plot = svg.selectAll("rect").data(plot_data, function(d) { return d.fig; });
 
         // add new squares
         plot.enter()
@@ -252,31 +252,51 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
         let [svg, x, y] = create_from_data(sliced_arr);
 
+        d3.select("#data-range-offset-input").on("input", function() {
+
+            if (this.value < 0) this.value = 0;
+
+            let start_input = d3.select("#data-range-start-input");
+            let cur_start = +start_input.property("value");
+
+            let end_input = d3.select("#data-range-end-input");
+            let cur_end = +end_input.property("value");
+
+            let start_offset = cur_start + (+this.value);
+            let end_offset = cur_end + (+this.value);
+            let fresh_slice = all_data_arr.slice(start_offset, end_offset);
+            update_from_data(svg, x, y, fresh_slice);
+
+        });
+
         d3.select("#data-range-start-input").on("input", function() {
+
+            if (this.value < 0) { this.value = 0; }
+
             let start_offset = +this.value;
             let end_offset = d3.select("#data-range-end-input").property("value");
             if (start_offset > end_offset) {
                 d3.select("#data-range-start-input").property("value", end_offset);
             }
-            if (start_offset < 0) {
-                start_offset = this.value = 0;
-            }
-            console.log("new start: " + start_offset + " new end: " + end_offset);
+
             let fresh_slice = all_data_arr.slice(start_offset, end_offset);
             update_from_data(svg, x, y, fresh_slice);
+
         });
 
         d3.select("#data-range-end-input").on("input", function() {
+
+            if (this.value < 0) { this.value = 0; }
+
             let start_offset = d3.select("#data-range-start-input").property("value");
             let end_offset = +this.value;
             if (end_offset < start_offset) {
                 d3.select("#data-range-end-input").property("value", start_offset);
             }
-            if (end_offset < 0) {
-                end_offset = this.value = 0;
-            }
+            
             let fresh_slice = all_data_arr.slice(start_offset, end_offset);
             update_from_data(svg, x, y, fresh_slice);
+
         });
 
         console.log("number of categories: " + categories.size());
