@@ -170,6 +170,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
             .on("mousemove", on_mouse_move)
             .on("mouseleave", on_mouse_leave);
 
+        // FIXME: this is a bit of a bodge.. like the rest is sort of
+        d3.select("#data-total-entries").text(plot_data.length);
+
         return [svg, x, y];
 
     }
@@ -231,6 +234,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
         // remove old squares
         plot.exit().remove();
 
+        return plot_data.length;
+
     }
     
     d3.json("data/proteins.json").then(function(data) {
@@ -239,11 +244,12 @@ document.addEventListener("DOMContentLoaded", function(event) {
             data[key].fig = key;
         }
 
-        let initial_start_offset = d3.select("#data-range-start-input").property("value");
-        let initial_end_offset = d3.select("#data-range-end-input").property("value");
+        let initial_start_offset = +d3.select("#data-range-start-input").property("value");
+        let initial_end_offset = +d3.select("#data-range-end-input").property("value");
+        let initial_offset = +d3.select("#data-range-offset-input").property("value");
         
         let all_data_arr = Object.values(data).sort((a, b) => d3.ascending(a.fig, b.fig));
-        let sliced_arr = all_data_arr.slice(initial_start_offset, initial_end_offset);
+        let sliced_arr = all_data_arr.slice(initial_start_offset + initial_offset, initial_end_offset + initial_offset);
 
         let categories = set_of_property(all_data_arr, 'category');
         let subcategories = set_of_property(all_data_arr, 'subcategory');
@@ -265,7 +271,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
             let start_offset = cur_start + (+this.value);
             let end_offset = cur_end + (+this.value);
             let fresh_slice = all_data_arr.slice(start_offset, end_offset);
-            update_from_data(svg, x, y, fresh_slice);
+            let num_entries = update_from_data(svg, x, y, fresh_slice);
+
+            d3.select("#data-total-entries").text(num_entries);
 
         });
 
@@ -280,7 +288,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
             }
 
             let fresh_slice = all_data_arr.slice(start_offset, end_offset);
-            update_from_data(svg, x, y, fresh_slice);
+            let num_entries = update_from_data(svg, x, y, fresh_slice);
+
+            d3.select("#data-total-entries").text(num_entries);
 
         });
 
@@ -295,7 +305,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
             }
             
             let fresh_slice = all_data_arr.slice(start_offset, end_offset);
-            update_from_data(svg, x, y, fresh_slice);
+            let num_entries = update_from_data(svg, x, y, fresh_slice);
+
+            d3.select("#data-total-entries").text(num_entries)
 
         });
 
