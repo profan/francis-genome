@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     let deduplicate_data = function(slice) {
 
-        let augmented_data = slice.flatMap(function(e) {
+        let augmented_data = slice.flatMap(function (e) {
             return e.contig_ids.map(function (c) {
                 return {
                     fig: e.fig, contig_id: c
@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             }
         });
 
-        return Object.values(deduplicated_data).flatMap(function(e) {
+        return Object.values(deduplicated_data).flatMap(function (e) {
             return Array.from(e.contig_ids.values()).map(function (c) {
                 return {
                     fig: e.fig, contig_id: c
@@ -212,7 +212,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             .call(d3.axisLeft(y));
 
         let plot_data = deduplicate_data(array);
-        let plot = svg.selectAll("rect").data(plot_data, function(d) { return d.fig; });
+        let plot = svg.selectAll("rect").data(plot_data, function(d) { return d.index; });
 
         // add new squares
         plot.enter()
@@ -232,7 +232,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             .on("mouseleave", on_mouse_leave);
 
         // remove old squares
-        plot.exit().remove();
+        plot.exit().transition().remove();
 
         return plot_data.length;
 
@@ -249,6 +249,12 @@ document.addEventListener("DOMContentLoaded", function(event) {
         let initial_offset = +d3.select("#data-range-offset-input").property("value");
         
         let all_data_arr = Object.values(data).sort((a, b) => d3.ascending(a.fig, b.fig));
+        all_data_arr.map((e) => ({fig: e.fig, contig_id: e.contig_id}));
+        
+        for (let i = 0; i < all_data_arr.length; ++i) {
+            all_data_arr[i].index = i;
+        }
+
         let sliced_arr = all_data_arr.slice(initial_start_offset + initial_offset, initial_end_offset + initial_offset);
 
         let categories = set_of_property(all_data_arr, 'category');
@@ -260,7 +266,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
         d3.select("#data-range-offset-input").on("input", function() {
 
-            if (this.value < 0) this.value = 0;
+            if (this.value < 0) { this.value = 0; }
 
             let start_input = d3.select("#data-range-start-input");
             let cur_start = +start_input.property("value");
