@@ -359,6 +359,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             cur.set.values().sort(d3.ascending).forEach(function(v) {
                 cur.container.append("li")
                     .attr("id", cur.prefix + i)
+                    .style("display", "block")
                 .append("button")
                     .attr("class", i)
                     .on("click", function(e) { 
