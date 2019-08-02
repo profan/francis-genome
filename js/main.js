@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             data[key].fig = key;
         }
 
-        let sliced_arr = Object.values(data).slice(0, 100);
+        let sliced_arr = Object.values(data).sort((a, b) => d3.ascending(a.fig, b.fig)).slice(0, 50);
         let categories = set_of_property(sliced_arr, 'category');
         let subcategories = set_of_property(sliced_arr, 'subcategory');
         let subsystems = set_of_property(sliced_arr, 'subsystem');
