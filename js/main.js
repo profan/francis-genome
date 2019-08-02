@@ -187,9 +187,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
         /* canvas stuff here? */
         canvas_render(x, y, plot_data);
 
-        // FIXME: this is a bit of a bodge.. like the rest is sort of
-        d3.select("#data-total-entries").text(plot_data.length);
-
         return [svg, x, y];
 
     }
@@ -241,6 +238,12 @@ document.addEventListener("DOMContentLoaded", function(event) {
         return plot_data.length;
 
     }
+
+    function update_ranges(new_start, new_end, num_entries) {
+        d3.select("#data-range-start").text(new_start);
+        d3.select("#data-range-end").text(new_end);
+        d3.select("#data-total-entries").text(num_entries);
+    }
     
     d3.json("data/proteins.json").then(function(data) {
 
@@ -263,6 +266,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         let roles = set_of_property(all_data_arr, 'role');
 
         let [svg, x, y] = create_from_data(sliced_arr);
+        update_ranges(initial_start_offset + initial_offset, initial_end_offset + initial_offset, sliced_arr.length);
 
         d3.select("#data-range-offset-input").on("input", function() {
 
@@ -279,7 +283,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             let fresh_slice = all_data_arr.slice(start_offset, end_offset);
             let num_entries = update_from_data(svg, x, y, fresh_slice);
 
-            d3.select("#data-total-entries").text(num_entries);
+            update_ranges(start_offset, end_offset, num_entries);
 
         });
 
@@ -296,7 +300,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             let fresh_slice = all_data_arr.slice(start_offset, end_offset);
             let num_entries = update_from_data(svg, x, y, fresh_slice);
 
-            d3.select("#data-total-entries").text(num_entries);
+            update_ranges(start_offset, end_offset, num_entries);
 
         });
 
@@ -313,7 +317,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             let fresh_slice = all_data_arr.slice(start_offset, end_offset);
             let num_entries = update_from_data(svg, x, y, fresh_slice);
 
-            d3.select("#data-total-entries").text(num_entries)
+            update_ranges(start_offset, end_offset, num_entries);
 
         });
 
