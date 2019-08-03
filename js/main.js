@@ -200,24 +200,33 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     function update_with_filters(svg, x, y, array) {
 
-        let start_offset = +d3.select("#data-range-start-input").property("value");
-        let end_offset = +d3.select("#data-range-end-input").property("value");
+        let offset = +d3.select("#data-range-offset-input").property("value");
+        let start_offset = +d3.select("#data-range-start-input").property("value") + offset;
+        let end_offset = +d3.select("#data-range-end-input").property("value") + offset;
         
         let filtered_data = array.filter(function (e) {
 
+            let all_filters_empty = true;
             for (let type in active_filters) {
+
                 let filters = active_filters[type];
                 let found_match = false;
+
                 filters.each(function(filter) {
-                    // console.log(filter, e[type]);
+                    all_filters_empty = false;
                     if (filter == e[type]) {
                         found_match = true;
                     }
                 });
+
                 if (found_match) {
                     return true;
                 }
+                
             }
+
+            /* in case we had no filters, return all the things */
+            return all_filters_empty;
 
         });
 
@@ -385,7 +394,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
         }
 
-        d3.select("#data-range-offset-input").on("input", function() {
+        d3.select("#data-range-offset-input").on("input", function(v) {
 
             if (this.value < 0) { this.value = 0; }
 
@@ -397,12 +406,12 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
             let start_offset = cur_start + (+this.value);
             let end_offset = cur_end + (+this.value);
-            let fresh_slice = all_data_arr.slice(start_offset, end_offset);
-            let num_entries = update_with_filters(svg, x, y, fresh_slice);
+            // let fresh_slice = all_data_arr.slice(start_offset, end_offset);
+            let num_entries = update_with_filters(svg, x, y, all_data_arr);
 
         });
 
-        d3.select("#data-range-start-input").on("input", function() {
+        d3.select("#data-range-start-input").on("input", function(v) {
 
             if (this.value < 0) { this.value = 0; }
 
@@ -412,12 +421,12 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 d3.select("#data-range-start-input").property("value", end_offset);
             }
 
-            let fresh_slice = all_data_arr.slice(start_offset, end_offset);
-            let num_entries = update_with_filters(svg, x, y, fresh_slice);
+            // let fresh_slice = all_data_arr.slice(start_offset, end_offset);
+            let num_entries = update_with_filters(svg, x, y, all_data_arr);
 
         });
 
-        d3.select("#data-range-end-input").on("input", function() {
+        d3.select("#data-range-end-input").on("input", function(v) {
 
             if (this.value < 0) { this.value = 0; }
 
@@ -427,8 +436,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 d3.select("#data-range-end-input").property("value", start_offset);
             }
             
-            let fresh_slice = all_data_arr.slice(start_offset, end_offset);
-            let num_entries = update_with_filters(svg, x, y, fresh_slice);
+            // let fresh_slice = all_data_arr.slice(start_offset, end_offset);
+            let num_entries = update_with_filters(svg, x, y, all_data_arr);
+
         });
 
         for (let criteria of filters) {
