@@ -269,7 +269,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         svg.select(".x")
             .attr("transform", "translate(0," + dims.height + ")")
             .transition().duration(100)
-            .call(d3.axisBottom(x));
+            .call(d3.axisBottom(x).tickSize(0));
 
         let figfams_sorted = figfams.values().sort(d3.descending);
         y.domain(figfams_sorted)
@@ -277,7 +277,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         
         svg.select(".y")
             .transition().duration(100)
-            .call(d3.axisLeft(y));
+            .call(d3.axisLeft(y).tickSize(0));
 
         let plot_data = deduplicate_data(array);
 
