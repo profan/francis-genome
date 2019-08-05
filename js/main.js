@@ -176,7 +176,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             .attr("class", "x axis")
             .style("font-size", label_font_size)
             .attr("transform", "translate(0," + dims.height + ")")
-            .call(d3.axisBottom(axis_swapped ? y : x).tickSize(0))
+            .call(d3.axisBottom(x).tickSize(0))
             .selectAll("text")
                 .attr("transform", "rotate(90) translate(5, -6)") /* necessary for text to not overlap with edge of axis line */
                 .style("text-anchor", "start")
@@ -186,7 +186,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         svg.append("g")
             .attr("class", "y axis")
             .style("font-size", label_font_size)
-            .call(d3.axisLeft(axis_swapped ? x : y).tickSize(0))
+            .call(d3.axisLeft(y).tickSize(0))
             .selectAll("text")
                 .attr("class", "y-axis")
             .select(".domain").remove();
@@ -499,6 +499,16 @@ document.addEventListener("DOMContentLoaded", function(event) {
             let num_entries = update_with_filters(svg, x, y, all_data_arr, data);
 
         });
+
+        /*
+        d3.select("#data-swap-axes").on("click", function(e) {
+
+            axis_swapped = !axis_swapped;
+
+            let num_entries = update_with_filters(svg, y, x, all_data_arr, data);
+
+        });
+        */
 
         let colours;
         d3.json("/deps/colours.json").then(function(data) {
