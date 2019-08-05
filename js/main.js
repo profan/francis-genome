@@ -243,7 +243,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
             let filters = active_filters[type];
 
             filters.each(function(filter) {
-                fn(filter, type);
+                let ret_val = fn(filter, type);
+                if (ret_val === false) return;
             });
             
         }
@@ -355,78 +356,59 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
         let any_filters = false;
 
-        if (do_filter)
-        for_each_filter(function(filter_name, filter_type) {
+        let matches_any_mapping = function(value, target, mappings) {
 
-            any_filters = true;
-
-            d3.select("#data-category").selectAll("li button").each(function(_, i) {
-
-                let cur_item = category_mapping[this.innerText];
-                while (cur_item && cur_item != filter_name) {
-                    let new_item = category_mapping[cur_item];
-                    if (!new_item || category_mapping[new_item] == category_mapping[new_item]) {
-                        break;
-                    } else {
-                        cur_item = new_item;
-                    }
+            let cur_item = mappings[value];
+            while (cur_item != target) {
+                let new_item = mappings[cur_item];
+                if (!new_item || mappings[new_item] == mappings[cur_item]) {
+                    break;
+                } else {
+                    cur_item = new_item;
                 }
+            }
 
-                this.style.display = (cur_item == filter_name) ? "inline-block" : "none";
+            return cur_item;
+
+        }
+
+        let show_matching_mappings = function(_, i) {
+
+            let self = this;
+            let matched_any = false;
+
+            for_each_filter(function(filter_name, filter_type) {
+
+                any_filters = true; /* HACK */
+                if (matched_any) return; /* ALREADY MATCHED, behaviour now matches other search.. */
+
+                let found_match = matches_any_mapping(self.innerText, filter_name, category_mapping);
+                let has_match = (found_match == filter_name);
+
+                self.style.display = has_match ? "inline-block" : "none";
+                if (has_match) {
+                    matched_any = true;
+                    return false;
+                }
 
             });
 
-            d3.select("#data-subcategory").selectAll("li button").each(function(_, i) {
+        }
 
-                let cur_item = category_mapping[this.innerText];
-                while (cur_item != filter_name) {
-                    let new_item = category_mapping[cur_item];
-                    if (!new_item || category_mapping[cur_item] == category_mapping[new_item]) {
-                        break;
-                    } else {
-                        cur_item = new_item;
-                    }
-                }
+        if (do_filter) {
 
-                this.style.display = (cur_item == filter_name) ? "inline-block" : "none";
+            d3.select("#data-category").selectAll("li button").each(show_matching_mappings);
 
-            });
+            d3.select("#data-subcategory").selectAll("li button").each(show_matching_mappings);
 
-            d3.select("#data-subsystem").selectAll("li button").each(function(_, i) {
+            d3.select("#data-subsystem").selectAll("li button").each(show_matching_mappings);
 
-                let cur_item = category_mapping[this.innerText];
-                while (cur_item != filter_name) {
-                    let new_item = category_mapping[cur_item];
-                    if (!new_item || category_mapping[cur_item] == category_mapping[new_item]) {
-                        break;
-                    } else {
-                        cur_item = new_item;
-                    }
-                }
+            d3.select("#data-role").selectAll("li button").each(show_matching_mappings);
 
-                this.style.display = (cur_item == filter_name) ? "inline-block" : "none";
-
-            });
-
-            d3.select("#data-role").selectAll("li button").each(function(_, i) {
-
-                let cur_item = category_mapping[this.innerText];
-                while (cur_item != filter_name) {
-                    let new_item = category_mapping[cur_item];
-                    if (!new_item || category_mapping[cur_item] == category_mapping[new_item]) {
-                        break;
-                    } else {
-                        cur_item = new_item;
-                    }
-                }
-
-                this.style.display = (cur_item == filter_name) ? "inline-block" : "none";
-
-            });
-
-        });
+        }
 
         if (!any_filters) {
+
             d3.select("#data-category").selectAll("li button").each(function(_, i) {
                 this.style.display = "inline-block";
             });
@@ -442,6 +424,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             d3.select("#data-role").selectAll("li button").each(function(_, i) {
                 this.style.display = "inline-block";
             });
+
         }
 
     }
