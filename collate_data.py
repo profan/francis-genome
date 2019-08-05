@@ -37,6 +37,8 @@ subsystems_dir = args.subsystems_dir
 feature_id_to_fig_mapping = {}
 
 all_protein_data = {}
+all_category_data = {}
+
 with open(all_proteins_file, 'r') as csvfile:
 
     reader = csv.DictReader(csvfile)
@@ -92,6 +94,10 @@ for entry in files_in_subsystems_dir:
             data['subsystem'] = subsystem
             data['role'] = role
 
+            all_category_data[subcategory] = category
+            all_category_data[subsystem] = subcategory
+            all_category_data[role] = subsystem
+
             all_protein_data[figfam_id] = data
 
 total_rows = skipped_rows + processed_rows
@@ -103,3 +109,8 @@ output_file_path = os.path.join(cur_dir, 'output/proteins.json')
 with open(output_file_path, 'w') as f:
     json.dump(all_protein_data, f)
     print("[collate_data] wrote data with %d proteins to: %s" % (len(all_protein_data), output_file_path))
+
+output_category_file_path = os.path.join(cur_dir, 'output/categories.json')
+with open(output_category_file_path, 'w') as f:
+    json.dump(all_category_data, f)
+    print("[collate_data] wrote data with %d categories/subcategories/subsystems/roles to: %s" % (len(all_category_data), output_category_file_path))
