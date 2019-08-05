@@ -1,6 +1,5 @@
 "use strict";
 
-let category_mapping;
 document.addEventListener("DOMContentLoaded", function(event) {
 
     let axis_swapped = false;
@@ -530,6 +529,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
         });
 
+        let category_mapping;
         d3.json("data/categories.json").then(function(data) {
             category_mapping = data;
         });
@@ -554,7 +554,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                         }
                     }
 
-                    this.style.display = (cur_item == filter_name) ? "block" : "none";
+                    this.style.display = (cur_item == filter_name) ? "inline-block" : "none";
 
                 });
 
@@ -570,7 +570,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                         }
                     }
 
-                    this.style.display = (cur_item == filter_name) ? "block" : "none";
+                    this.style.display = (cur_item == filter_name) ? "inline-block" : "none";
 
                 });
 
@@ -586,7 +586,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                         }
                     }
 
-                    this.style.display = (cur_item == filter_name) ? "block" : "none";
+                    this.style.display = (cur_item == filter_name) ? "inline-block" : "none";
 
                 });
 
@@ -602,7 +602,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                         }
                     }
 
-                    this.style.display = (cur_item == filter_name) ? "block" : "none";
+                    this.style.display = (cur_item == filter_name) ? "inline-block" : "none";
 
                 });
 
@@ -610,19 +610,19 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
             if (!any_filters) {
                 d3.select("#data-category").selectAll("li button").each(function(_, i) {
-                    this.style.display = "block";
+                    this.style.display = "inline-block";
                 });
 
                 d3.select("#data-subcategory").selectAll("li button").each(function(_, i) {
-                    this.style.display = "block";
+                    this.style.display = "inline-block";
                 });
 
                 d3.select("#data-subsystem").selectAll("li button").each(function(_, i) {
-                    this.style.display = "block";
+                    this.style.display = "inline-block";
                 });
 
                 d3.select("#data-role").selectAll("li button").each(function(_, i) {
-                    this.style.display = "block";
+                    this.style.display = "inline-block";
                 });
             }
             
@@ -687,7 +687,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                     let e = this;
                     let search_rgx = new RegExp(search_value, 'i');
                     let new_value = e.innerText.search(search_rgx) !== -1;
-                    e.parentElement.style.display = new_value ? "block" : "none";
+                    e.parentElement.style.display = new_value ? "inline-block" : "none";
                 });
             });
         }
