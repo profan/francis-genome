@@ -2,6 +2,7 @@
 
 document.addEventListener("DOMContentLoaded", function(event) {
 
+    let axis_swapped = false;
     let label_font_size = 12;
 
     let margins = {
@@ -27,31 +28,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     function set_of_property(arr, property) {
         return d3.set(arr.flatMap(x => x[property]).filter(x => typeof x === 'string'));
-    }
-
-    let on_mouse_over = function (d) {
-        // tooltip
-        //     .style("opacity", 1)
-        d3.select(this)
-            .style("stroke", "black")
-            .style("opacity", 1)
-    }
-    
-    let on_mouse_move = function (d) {
-        /*
-        tooltip
-            .html("The exact value of<br>this cell is: " + d.fig + ":" + d.contig_id)
-            .style("left", (d3.mouse(this)[0] + 70) + "px")
-            .style("top", (d3.mouse(this)[1]) + "px")
-            */
-    }
-
-    let on_mouse_leave = function (d) {
-        // tooltip
-        //    .style("opacity", 0)
-        d3.select(this)
-            .style("stroke", "none")
-            .style("opacity", 0.8)
     }
 
     let protein_belongs_to_genome = function (p, contig_id) {
@@ -146,8 +122,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
             let colour = protein_to_colour(all_data, e.fig);
             ctx.fillStyle = (colour !== false) ? colour : 'rgba(0, 0, 0, 0.7)';
 
-            let c_x = x(e.contig_id);
-            let c_y = y(e.fig);
+            let c_x = axis_swapped ? y(e.contig_id) : x(e.contig_id);
+            let c_y = axis_swapped ? x(e.fig) : y(e.fig);
 
             ctx.fillRect(c_x+1, c_y+1, 10, 10);
 
@@ -184,32 +160,33 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 .attr("transform", "translate(" + margins.left + "," + margins.top + ")");
 
         let genes_sorted = genes.values().sort(d3.descending);
+        let figfams_sorted = figfams.values().sort(d3.descending);
+
         let x = d3.scaleBand()
             .range([0, dims.width])
-            .domain(genes_sorted)
+            .domain(axis_swapped ? figfams_sorted : genes_sorted)
             .padding(0.05); /* is this good? */
+
+        let y = d3.scaleBand()
+            .range([dims.height, 0])
+            .domain(axis_swapped ? genes_sorted : figfams_sorted)
+            .padding(0.05);
 
         svg.append("g")
             .attr("class", "x axis")
             .style("font-size", label_font_size)
             .attr("transform", "translate(0," + dims.height + ")")
-            .call(d3.axisBottom(x).tickSize(0))
+            .call(d3.axisBottom(axis_swapped ? y : x).tickSize(0))
             .selectAll("text")
                 .attr("transform", "rotate(90) translate(5, -6)") /* necessary for text to not overlap with edge of axis line */
                 .style("text-anchor", "start")
                 .attr("class", "x-axis")
             .select(".domain").remove();
         
-        let figfams_sorted = figfams.values().sort(d3.descending);
-        let y = d3.scaleBand()
-            .range([dims.height, 0])
-            .domain(figfams_sorted)
-            .padding(0.05);
-        
         svg.append("g")
             .attr("class", "y axis")
             .style("font-size", label_font_size)
-            .call(d3.axisLeft(y).tickSize(0))
+            .call(d3.axisLeft(axis_swapped ? x : y).tickSize(0))
             .selectAll("text")
                 .attr("class", "y-axis")
             .select(".domain").remove();
@@ -299,7 +276,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
         let genes = set_of_property(array, 'contig_ids');
         let figfams = set_of_property(array, 'fig');
-        recalculate_dimensions(genes, figfams);
+        recalculate_dimensions(axis_swapped ? figfams : genes, axis_swapped ? genes : figfams);
 
         // update canvas size
         let canvas = document.getElementById('canvas');
@@ -316,8 +293,13 @@ document.addEventListener("DOMContentLoaded", function(event) {
         // update axes
 
         let genes_sorted = genes.values().sort(d3.descending);
-        x.domain(genes_sorted)
+        let figfams_sorted = figfams.values().sort(d3.descending);
+
+        x.domain(axis_swapped ? figfams_sorted : genes_sorted)
             .range([0, dims.width]);
+
+        y.domain(axis_swapped ? genes_sorted : figfams_sorted)
+            .range([dims.height, 0]);
 
         svg.select(".x")
             .attr("transform", "translate(0," + dims.height + ")")
@@ -328,10 +310,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 .style("text-anchor", "start")
                 .attr("class", "x-axis")
             .select(".domain").remove();
-
-        let figfams_sorted = figfams.values().sort(d3.descending);
-        y.domain(figfams_sorted)
-            .range([dims.height, 0]);
         
         svg.select(".y")
             .transition().duration(100)
