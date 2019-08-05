@@ -265,16 +265,19 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
         // update axes
 
-        /*
         let genes_sorted = genes.values().sort(d3.descending);
         x.domain(genes_sorted)
             .range([0, dims.width]);
-        */
 
         svg.select(".x")
             .attr("transform", "translate(0," + dims.height + ")")
             .transition().duration(100)
-            .call(d3.axisBottom(x).tickSize(0));
+            .call(d3.axisBottom(x).tickSize(0))
+                .selectAll("text")
+                .attr("transform", "rotate(90) translate(5, -6)") /* necessary for text to not overlap with edge of axis line */
+                .style("text-anchor", "start")
+                .attr("class", "x-axis")
+            .select(".domain").remove();
 
         let figfams_sorted = figfams.values().sort(d3.descending);
         y.domain(figfams_sorted)
