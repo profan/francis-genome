@@ -20,6 +20,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
         role : d3.set()
     };
 
+    /* maps filter names to metadata */
+    let active_filter_properties = {
+        colours : d3.set()
+    };
+
     function set_of_property(arr, property) {
         return d3.set(arr.flatMap(x => x[property]).filter(x => typeof x === 'string'));
     }
@@ -470,7 +475,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 on_new_scroll_delta(e.deltaY);
                 e.preventDefault();
             }
-        });
+        }, {passive: false}); /* fix for chrome */
 
         for (let criteria of filters) {
             criteria.searchbox.on("input", function() {
