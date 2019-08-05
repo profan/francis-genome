@@ -100,6 +100,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     }
 
+    /* match by most specific first, if a role matches but also a subsystem, role takes priority */
     let protein_to_colour = function(all_data, fig) {
 
         let category = all_data[fig].category;
@@ -112,20 +113,21 @@ document.addEventListener("DOMContentLoaded", function(event) {
         let has_subsystem_colour = active_filter_properties.colours.has(subsystem);
         let has_role_colour = active_filter_properties.colours.has(role);
 
-        if (has_category_colour) {
-            return active_filter_properties.colours.get(category);
-        }
 
-        if (has_subcategory_colour) {
-            return active_filter_properties.colours.get(subcategory);
+        if (has_role_colour) {
+            return active_filter_properties.colours.get(role);
         }
 
         if (has_subsystem_colour) {
             return active_filter_properties.colours.get(subsystem);
         }
 
-        if (has_role_colour) {
-            return active_filter_properties.colours.get(role);
+        if (has_subcategory_colour) {
+            return active_filter_properties.colours.get(subcategory);
+        }
+
+        if (has_category_colour) {
+            return active_filter_properties.colours.get(category);
         }
 
         return false;
