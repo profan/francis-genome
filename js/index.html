@@ -17,10 +17,11 @@
         <h1>Protein Category Visualization</h1>
         <div id="data-graph" class="data-graph"></div>
         <h2>Current Range [<span id="data-range-start">0</span>, <span id="data-range-end">25</span>] - Shown Proteins: <span id="data-filtered-entries">0</span> - Total Filtered Proteins: <span id="data-total-entries">0</span></h2>
-        <h3>Offset <input id="data-range-offset-input" value=0 type="number" size=16 min=0></h3>
-        <h3>Start <input id="data-range-start-input" value=0 type="number" size=16 min=0></h3>
-        <h3>End <input id="data-range-end-input" value=25 type="number" size=16 min=0></h3>
-        <h2>Active Filters <button class="button">Assign Random Colours</button></h2>
+        Offset <input id="data-range-offset-input" value=0 type="number" size=16 min=0>
+        Start <input id="data-range-start-input" value=0 type="number" size=16 min=0>
+        End <input id="data-range-end-input" value=25 type="number" size=16 min=0>
+        <button id="data-range-reset" class="button">Reset</button>
+        <h2>Active Filters <button class="button" id="data-assign-random-colours">Assign Random Colours</button></h2>
         <div id="data-active-filters"></div>
         <h2>Filters</h2>
         <div class="flex-grid">

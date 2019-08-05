@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     /* maps filter names to metadata */
     let active_filter_properties = {
-        colours : d3.set()
+        colours : {}
     };
 
     function set_of_property(arr, property) {
@@ -100,7 +100,39 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     }
 
-    function canvas_render(x, y, array) {
+    let protein_to_colour = function(all_data, fig) {
+
+        let category = all_data[fig].category;
+        let subcategory = all_data[fig].subcategory;
+        let subsystem = all_data[fig].subsystem;
+        let role = all_data[fig].role;
+
+        let has_category_colour = active_filter_properties.colours.hasOwnProperty(category);
+        let has_subcategory_colour = active_filter_properties.colours.hasOwnProperty(subcategory);
+        let has_subsystem_colour = active_filter_properties.colours.hasOwnProperty(subsystem);
+        let has_role_colour = active_filter_properties.colours.hasOwnProperty(role);
+
+        if (has_category_colour) {
+            return active_filter_properties.colours[category];
+        }
+
+        if (has_subcategory_colour) {
+            return active_filter_properties.colours[subcategory];
+        }
+
+        if (has_subsystem_colour) {
+            return active_filter_properties.colours[subsystem];
+        }
+
+        if (has_role_colour) {
+            return active_filter_properties.colours[role];
+        }
+
+        return false;
+
+    }
+
+    function canvas_render(x, y, array, all_data) {
 
         let cvs = document.getElementById('canvas');
         let ctx = cvs.getContext('2d');
@@ -109,6 +141,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'
 
         array.forEach(function(e) {
+
+            let colour = protein_to_colour(all_data, e.fig);
+            ctx.fillStyle = (colour !== false) ? colour : 'rgba(0, 0, 0, 0.7)';
 
             let c_x = x(e.contig_id);
             let c_y = y(e.fig);
@@ -119,7 +154,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     }
 
-    function create_from_data(array) {
+    function create_from_data(array, all_data) {
 
         let genes = set_of_property(array, 'contig_ids');
         let figfams = set_of_property(array, 'fig');
@@ -197,13 +232,27 @@ document.addEventListener("DOMContentLoaded", function(event) {
         console.log("necessary height: " + dims.height);
 
         /* canvas stuff here? */
-        canvas_render(x, y, plot_data);
+        canvas_render(x, y, plot_data, all_data);
 
         return [svg, x, y];
 
     }
 
-    function update_with_filters(svg, x, y, array) {
+    let for_each_filter = function(fn) {
+
+        for (let type in active_filters) {
+
+            let filters = active_filters[type];
+
+            filters.each(function(filter) {
+                fn(filter, type);
+            });
+            
+        }
+
+    }
+
+    function update_with_filters(svg, x, y, array, all_data) {
 
         let offset = +d3.select("#data-range-offset-input").property("value");
         let start_offset = +d3.select("#data-range-start-input").property("value") + offset;
@@ -238,14 +287,14 @@ document.addEventListener("DOMContentLoaded", function(event) {
         let fresh_slice = filtered_data.slice(start_offset, end_offset);
         // let total_num_entries = deduplicate_data(filtered_data).length;
 
-        let num_entries = update_from_data(svg, x, y, fresh_slice);
+        let num_entries = update_from_data(svg, x, y, fresh_slice, all_data);
         update_ranges(start_offset, end_offset, fresh_slice.length, filtered_data.length);
 
         return fresh_slice.length;
 
     }
 
-    function update_from_data(svg, x, y, array) {
+    function update_from_data(svg, x, y, array, all_data) {
 
         let genes = set_of_property(array, 'contig_ids');
         let figfams = set_of_property(array, 'fig');
@@ -290,7 +339,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         let plot_data = deduplicate_data(array);
 
         /* canvas stuff here? */
-        canvas_render(x, y, plot_data);
+        canvas_render(x, y, plot_data, all_data);
 
         return plot_data.length;
 
@@ -323,8 +372,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
         let subsystems = set_of_property(all_data_arr, 'subsystem');
         let roles = set_of_property(all_data_arr, 'role');
 
-        let [svg, x, y] = create_from_data(sliced_arr);
-        update_with_filters(svg, x, y, all_data_arr); /* HACK */
+        let [svg, x, y] = create_from_data(sliced_arr, data);
+        update_with_filters(svg, x, y, all_data_arr, data); /* HACK */
 
         // populate filters...
         let data_category = d3.select("#data-category");
@@ -379,6 +428,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                     .style("display", "block")
                 .append("button")
                     .attr("which", i)
+                    .attr("kind", cur.prefix)
                     .attr("class", "button")
                     .on("click", function(e) { 
 
@@ -386,15 +436,18 @@ document.addEventListener("DOMContentLoaded", function(event) {
                             let self = this;
                             d3.select(this).remove();
                             d3.select("#" + cur.prefix + self.getAttribute("which")).append(() => self); /* HACK */
+                            /* TODO: figure out if this is a good idea, maybe they should stay? */
+                            active_filter_properties.colours[this.innerText] = null;
                             cur.active_filters.remove(v);
                         } else {
                             let self = this;
                             d3.select(this).remove();
+                            active_filter_properties.colours[this.innerText] = this.getAttribute("colour");
                             d3.select("#data-active-filters").append(() => self);
                             cur.active_filters.add(v);
                         }
 
-                        update_with_filters(svg, x, y, all_data_arr); /* HACK */
+                        update_with_filters(svg, x, y, all_data_arr, data); /* HACK */
 
                     })
                     .text(v);
@@ -416,7 +469,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             let start_offset = cur_start + (+this.value);
             let end_offset = cur_end + (+this.value);
             // let fresh_slice = all_data_arr.slice(start_offset, end_offset);
-            let num_entries = update_with_filters(svg, x, y, all_data_arr);
+            let num_entries = update_with_filters(svg, x, y, all_data_arr, data);
 
         }
 
@@ -433,7 +486,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             }
 
             // let fresh_slice = all_data_arr.slice(start_offset, end_offset);
-            let num_entries = update_with_filters(svg, x, y, all_data_arr);
+            let num_entries = update_with_filters(svg, x, y, all_data_arr, data);
 
         }
 
@@ -450,11 +503,43 @@ document.addEventListener("DOMContentLoaded", function(event) {
             }
             
             // let fresh_slice = all_data_arr.slice(start_offset, end_offset);
-            let num_entries = update_with_filters(svg, x, y, all_data_arr);
+            let num_entries = update_with_filters(svg, x, y, all_data_arr, data);
 
         }
 
         d3.select("#data-range-end-input").on("input", on_range_end_input_changed);
+
+        d3.select("#data-range-reset").on("click", function(e) {
+
+            d3.select("#data-range-offset-input").property("value", 0);
+            d3.select("#data-range-start-input").property("value", 0);
+            d3.select("#data-range-end-input").property("value", 25);
+            
+            let num_entries = update_with_filters(svg, x, y, all_data_arr, data);
+
+        });
+
+        let colours;
+        d3.json("/deps/colours.json").then(function(data) {
+            colours = Object.values(data);
+        });
+
+        let get_random_colour = function() {
+            let random_index = Math.floor(Math.random() * colours.length);
+            return colours[random_index];
+        }
+
+        d3.select("#data-assign-random-colours").on("click", function(e) {
+
+            d3.select("#data-active-filters").selectAll("button").each(function(_, i) {
+                let filter_name = this.innerText;
+                active_filter_properties.colours[filter_name] = get_random_colour();
+                let our_new_colour = active_filter_properties.colours[filter_name];
+                d3.select(this).style("border", "8px solid " + our_new_colour);
+                d3.select(this).attr("colour", our_new_colour);
+            });
+
+        });
         
         let mouse_inside_graph = false;
         d3.select("#data-graph").on("mouseenter", function() {
