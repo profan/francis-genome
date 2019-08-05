@@ -113,7 +113,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
         let has_subsystem_colour = active_filter_properties.colours.has(subsystem);
         let has_role_colour = active_filter_properties.colours.has(role);
 
-
         if (has_role_colour) {
             return active_filter_properties.colours.get(role);
         }
@@ -542,6 +541,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 d3.select(this).style("border", "8px solid " + our_new_colour);
                 d3.select(this).attr("colour", our_new_colour);
             });
+
+            update_with_filters(svg, x, y, all_data_arr, data); /* tiny hack */
 
         });
         
