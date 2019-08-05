@@ -3,7 +3,7 @@
 document.addEventListener("DOMContentLoaded", function(event) {
 
     let axis_swapped = false;
-    let filter_the_filters = false;
+    let should_filter_the_filters = false;
     let label_font_size = 12;
 
     let margins = {
@@ -351,7 +351,112 @@ document.addEventListener("DOMContentLoaded", function(event) {
         d3.select("#data-total-entries").text(total_num_entries);
     }
 
+    let filter_the_filters = function(do_filter, category_mapping) {
+
+        let any_filters = false;
+
+        if (do_filter)
+        for_each_filter(function(filter_name, filter_type) {
+
+            any_filters = true;
+
+            d3.select("#data-category").selectAll("li button").each(function(_, i) {
+
+                let cur_item = category_mapping[this.innerText];
+                while (cur_item && cur_item != filter_name) {
+                    let new_item = category_mapping[cur_item];
+                    if (!new_item || category_mapping[new_item] == category_mapping[new_item]) {
+                        break;
+                    } else {
+                        cur_item = new_item;
+                    }
+                }
+
+                this.style.display = (cur_item == filter_name) ? "inline-block" : "none";
+
+            });
+
+            d3.select("#data-subcategory").selectAll("li button").each(function(_, i) {
+
+                let cur_item = category_mapping[this.innerText];
+                while (cur_item != filter_name) {
+                    let new_item = category_mapping[cur_item];
+                    if (!new_item || category_mapping[cur_item] == category_mapping[new_item]) {
+                        break;
+                    } else {
+                        cur_item = new_item;
+                    }
+                }
+
+                this.style.display = (cur_item == filter_name) ? "inline-block" : "none";
+
+            });
+
+            d3.select("#data-subsystem").selectAll("li button").each(function(_, i) {
+
+                let cur_item = category_mapping[this.innerText];
+                while (cur_item != filter_name) {
+                    let new_item = category_mapping[cur_item];
+                    if (!new_item || category_mapping[cur_item] == category_mapping[new_item]) {
+                        break;
+                    } else {
+                        cur_item = new_item;
+                    }
+                }
+
+                this.style.display = (cur_item == filter_name) ? "inline-block" : "none";
+
+            });
+
+            d3.select("#data-role").selectAll("li button").each(function(_, i) {
+
+                let cur_item = category_mapping[this.innerText];
+                while (cur_item != filter_name) {
+                    let new_item = category_mapping[cur_item];
+                    if (!new_item || category_mapping[cur_item] == category_mapping[new_item]) {
+                        break;
+                    } else {
+                        cur_item = new_item;
+                    }
+                }
+
+                this.style.display = (cur_item == filter_name) ? "inline-block" : "none";
+
+            });
+
+        });
+
+        if (!any_filters) {
+            d3.select("#data-category").selectAll("li button").each(function(_, i) {
+                this.style.display = "inline-block";
+            });
+
+            d3.select("#data-subcategory").selectAll("li button").each(function(_, i) {
+                this.style.display = "inline-block";
+            });
+
+            d3.select("#data-subsystem").selectAll("li button").each(function(_, i) {
+                this.style.display = "inline-block";
+            });
+
+            d3.select("#data-role").selectAll("li button").each(function(_, i) {
+                this.style.display = "inline-block";
+            });
+        }
+
+    }
+
     d3.json("data/proteins.json").then(function(data) {
+
+        let colours;
+        d3.json("deps/colours.json").then(function(data) {
+            colours = Object.values(data);
+        });
+
+        let category_mapping;
+        d3.json("data/categories.json").then(function(data) {
+            category_mapping = data;
+        });
 
         for (let key in data) {
             data[key].fig = key;
@@ -456,6 +561,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                             cur.active_filters.add(v);
                         }
 
+                        filter_the_filters(should_filter_the_filters, category_mapping);
                         update_with_filters(svg, x, y, all_data_arr, data); /* HACK */
                         on_new_scroll_delta(0); /* HACK DELUXE */
 
@@ -529,103 +635,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
         });
 
-        let category_mapping;
-        d3.json("data/categories.json").then(function(data) {
-            category_mapping = data;
-        });
-
         d3.select("#data-filter-the-filters").on("click", function() {
-
-            let any_filters = false;
-
-            for_each_filter(function(filter_name, filter_type) {
-
-                any_filters = true;
-
-                d3.select("#data-category").selectAll("li button").each(function(_, i) {
-
-                    let cur_item = category_mapping[this.innerText];
-                    while (cur_item && cur_item != filter_name) {
-                        let new_item = category_mapping[cur_item];
-                        if (!new_item || category_mapping[new_item] == category_mapping[new_item]) {
-                            break;
-                        } else {
-                            cur_item = new_item;
-                        }
-                    }
-
-                    this.style.display = (cur_item == filter_name) ? "inline-block" : "none";
-
-                });
-
-                d3.select("#data-subcategory").selectAll("li button").each(function(_, i) {
-
-                    let cur_item = category_mapping[this.innerText];
-                    while (cur_item != filter_name) {
-                        let new_item = category_mapping[cur_item];
-                        if (!new_item || category_mapping[cur_item] == category_mapping[new_item]) {
-                            break;
-                        } else {
-                            cur_item = new_item;
-                        }
-                    }
-
-                    this.style.display = (cur_item == filter_name) ? "inline-block" : "none";
-
-                });
-
-                d3.select("#data-subsystem").selectAll("li button").each(function(_, i) {
-
-                    let cur_item = category_mapping[this.innerText];
-                    while (cur_item != filter_name) {
-                        let new_item = category_mapping[cur_item];
-                        if (!new_item || category_mapping[cur_item] == category_mapping[new_item]) {
-                            break;
-                        } else {
-                            cur_item = new_item;
-                        }
-                    }
-
-                    this.style.display = (cur_item == filter_name) ? "inline-block" : "none";
-
-                });
-
-                d3.select("#data-role").selectAll("li button").each(function(_, i) {
-
-                    let cur_item = category_mapping[this.innerText];
-                    while (cur_item != filter_name) {
-                        let new_item = category_mapping[cur_item];
-                        if (!new_item || category_mapping[cur_item] == category_mapping[new_item]) {
-                            break;
-                        } else {
-                            cur_item = new_item;
-                        }
-                    }
-
-                    this.style.display = (cur_item == filter_name) ? "inline-block" : "none";
-
-                });
-
-            });
-
-            if (!any_filters) {
-                d3.select("#data-category").selectAll("li button").each(function(_, i) {
-                    this.style.display = "inline-block";
-                });
-
-                d3.select("#data-subcategory").selectAll("li button").each(function(_, i) {
-                    this.style.display = "inline-block";
-                });
-
-                d3.select("#data-subsystem").selectAll("li button").each(function(_, i) {
-                    this.style.display = "inline-block";
-                });
-
-                d3.select("#data-role").selectAll("li button").each(function(_, i) {
-                    this.style.display = "inline-block";
-                });
+            should_filter_the_filters = this.checked;
+            if (should_filter_the_filters) {
+                filter_the_filters(should_filter_the_filters, category_mapping);
             }
-            
         });
 
         /*
@@ -637,11 +651,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
         });
         */
-
-        let colours;
-        d3.json("deps/colours.json").then(function(data) {
-            colours = Object.values(data);
-        });
 
         let get_random_colour = function() {
             let random_index = Math.floor(Math.random() * colours.length);
