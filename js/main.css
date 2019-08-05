@@ -26,8 +26,22 @@ aside {
     margin: auto;
 }
 
-.input-filter {
+.data-graph {
+    position: relative;
+}
 
+input[type=range][orient=vertical] {
+    writing-mode: bt-lr; /* IE */
+    -webkit-appearance: slider-vertical; /* WebKit */
+    padding: 0 5px;
+    width: 32px;
+}
+
+.y-axis-slider {
+    height: 64%;
+    margin-top: 45px;
+    position: absolute;
+    right: 0;
 }
 
 .x-axis {

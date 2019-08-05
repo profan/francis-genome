@@ -231,10 +231,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
         });
 
         let fresh_slice = filtered_data.slice(start_offset, end_offset);
-        let total_num_entries = deduplicate_data(filtered_data).length;
+        // let total_num_entries = deduplicate_data(filtered_data).length;
 
         let num_entries = update_from_data(svg, x, y, fresh_slice);
-        update_ranges(start_offset, end_offset, num_entries, total_num_entries);
+        update_ranges(start_offset, end_offset, fresh_slice.length, filtered_data.length);
 
         return fresh_slice.length;
 
@@ -394,7 +394,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
         }
 
-        d3.select("#data-range-offset-input").on("input", function(v) {
+        let on_range_offset_input_changed = function(v) {
 
             if (this.value < 0) { this.value = 0; }
 
@@ -409,9 +409,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
             // let fresh_slice = all_data_arr.slice(start_offset, end_offset);
             let num_entries = update_with_filters(svg, x, y, all_data_arr);
 
-        });
+        }
 
-        d3.select("#data-range-start-input").on("input", function(v) {
+        d3.select("#data-range-offset-input").on("input", on_range_offset_input_changed);
+
+        let on_range_start_input_changed = function(v) {
 
             if (this.value < 0) { this.value = 0; }
 
@@ -424,9 +426,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
             // let fresh_slice = all_data_arr.slice(start_offset, end_offset);
             let num_entries = update_with_filters(svg, x, y, all_data_arr);
 
-        });
+        }
 
-        d3.select("#data-range-end-input").on("input", function(v) {
+        d3.select("#data-range-start-input").on("input", on_range_start_input_changed);
+
+        let on_range_end_input_changed = function(v) {
 
             if (this.value < 0) { this.value = 0; }
 
@@ -439,6 +443,33 @@ document.addEventListener("DOMContentLoaded", function(event) {
             // let fresh_slice = all_data_arr.slice(start_offset, end_offset);
             let num_entries = update_with_filters(svg, x, y, all_data_arr);
 
+        }
+
+        d3.select("#data-range-end-input").on("input", on_range_end_input_changed);
+        
+        let mouse_inside_graph = false;
+        d3.select("#data-graph").on("mouseenter", function() {
+            mouse_inside_graph = true;
+        });
+
+        d3.select("#data-graph").on("mouseleave", function() {
+            mouse_inside_graph = false;
+        });
+
+        let on_new_scroll_delta = function(delta) {
+            let element = d3.select("#data-range-offset-input");
+            let cur_offset = +element.property("value");
+            element.property("value", Math.max(0, cur_offset + delta));
+            let bound_func = on_range_offset_input_changed.bind(element);
+            bound_func();
+        }
+
+        window.addEventListener('wheel', function (e) {
+            /* also check if we actually need scrolling atm */
+            if (mouse_inside_graph) {
+                on_new_scroll_delta(e.deltaY);
+                e.preventDefault();
+            }
         });
 
         for (let criteria of filters) {
