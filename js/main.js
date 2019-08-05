@@ -260,26 +260,23 @@ document.addEventListener("DOMContentLoaded", function(event) {
         let filtered_data = array.filter(function (e) {
 
             let all_filters_empty = true;
+            let didnt_match_one = false;
+
             for (let type in active_filters) {
 
                 let filters = active_filters[type];
-                let found_match = false;
 
                 filters.each(function(filter) {
                     all_filters_empty = false;
-                    if (filter == e[type]) {
-                        found_match = true;
+                    if (filter != e[type]) {
+                        didnt_match_one = true;
                     }
                 });
-
-                if (found_match) {
-                    return true;
-                }
                 
             }
 
             /* in case we had no filters, return all the things */
-            return all_filters_empty;
+            return all_filters_empty ^ !didnt_match_one;
 
         });
 
