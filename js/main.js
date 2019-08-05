@@ -109,6 +109,25 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     }
 
+    let clamp_offset_to_range = function(offset) {
+
+        let cur_start_range = +d3.select("#data-range-start-input").property("value");
+        let cur_end_range = +d3.select("#data-range-end-input").property("value");
+        let cur_offset = +d3.select("#data-range-offset-input").property("value");
+
+        let filtered_entries = +d3.select("#data-filtered-entries").text();
+        let total_entries = +d3.select("#data-total-entries").text();
+
+        let start_offset = cur_start_range + offset;
+        let end_offset = cur_end_range + offset;
+        let diff = end_offset - start_offset;
+
+        if (filtered_entries === total_entries) return cur_offset;
+
+        return (start_offset < 0) ? 0 : ((end_offset > total_entries) ? Math.max(0, total_entries - diff) : offset);
+
+    }
+
     function canvas_render(x, y, array, all_data) {
 
         let cvs = document.getElementById('canvas');
@@ -367,6 +386,14 @@ document.addEventListener("DOMContentLoaded", function(event) {
         
         let data_active_filters = d3.select("#data-active-filters");
 
+        let on_new_scroll_delta = function(delta) {
+            let element = d3.select("#data-range-offset-input");
+            let cur_offset = +element.property("value");
+            element.property("value", clamp_offset_to_range(cur_offset + delta));
+            let bound_func = on_range_offset_input_changed.bind(element);
+            bound_func();
+        }
+
         const filters = [
             {
                 set: categories,
@@ -429,6 +456,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                         }
 
                         update_with_filters(svg, x, y, all_data_arr, data); /* HACK */
+                        on_new_scroll_delta(0); /* HACK DELUXE */
 
                     })
                     .text(v);
@@ -542,33 +570,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
         d3.select("#data-graph").on("mouseleave", function() {
             mouse_inside_graph = false;
         });
-
-        let clamp_offset_to_range = function(offset) {
-
-            let cur_start_range = +d3.select("#data-range-start-input").property("value");
-            let cur_end_range = +d3.select("#data-range-end-input").property("value");
-            let cur_offset = +d3.select("#data-range-offset-input").property("value");
-
-            let filtered_entries = +d3.select("#data-filtered-entries").text();
-            let total_entries = +d3.select("#data-total-entries").text();
-
-            let start_offset = cur_start_range + offset;
-            let end_offset = cur_end_range + offset;
-            let diff = end_offset - start_offset;
-
-            if (filtered_entries === total_entries) return cur_offset;
-
-            return (start_offset < 0) ? 0 : ((end_offset > total_entries) ? Math.max(0, total_entries - diff) : offset);
-
-        }
-
-        let on_new_scroll_delta = function(delta) {
-            let element = d3.select("#data-range-offset-input");
-            let cur_offset = +element.property("value");
-            element.property("value", clamp_offset_to_range(cur_offset + delta));
-            let bound_func = on_range_offset_input_changed.bind(element);
-            bound_func();
-        }
 
         window.addEventListener('wheel', function (e) {
             let scroll_increment = 5;
