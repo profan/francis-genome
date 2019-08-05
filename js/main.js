@@ -637,9 +637,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
         d3.select("#data-filter-the-filters").on("click", function() {
             should_filter_the_filters = this.checked;
-            if (should_filter_the_filters) {
-                filter_the_filters(should_filter_the_filters, category_mapping);
-            }
+            filter_the_filters(should_filter_the_filters, category_mapping);
         });
 
         /*
