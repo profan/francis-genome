@@ -548,7 +548,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
             if (filtered_entries === total_entries) return cur_offset;
 
-            return (start_offset < 0) ? 0 : ((end_offset > total_entries) ? total_entries - diff : offset);
+            return (start_offset < 0) ? 0 : ((end_offset > total_entries) ? Math.max(0, total_entries - diff) : offset);
 
         }
 
