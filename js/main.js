@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     /* maps filter names to metadata */
     let active_filter_properties = {
-        colours : {}
+        colours : d3.map()
     };
 
     function set_of_property(arr, property) {
@@ -107,25 +107,25 @@ document.addEventListener("DOMContentLoaded", function(event) {
         let subsystem = all_data[fig].subsystem;
         let role = all_data[fig].role;
 
-        let has_category_colour = active_filter_properties.colours.hasOwnProperty(category);
-        let has_subcategory_colour = active_filter_properties.colours.hasOwnProperty(subcategory);
-        let has_subsystem_colour = active_filter_properties.colours.hasOwnProperty(subsystem);
-        let has_role_colour = active_filter_properties.colours.hasOwnProperty(role);
+        let has_category_colour = active_filter_properties.colours.has(category);
+        let has_subcategory_colour = active_filter_properties.colours.has(subcategory);
+        let has_subsystem_colour = active_filter_properties.colours.has(subsystem);
+        let has_role_colour = active_filter_properties.colours.has(role);
 
         if (has_category_colour) {
-            return active_filter_properties.colours[category];
+            return active_filter_properties.colours.get(category);
         }
 
         if (has_subcategory_colour) {
-            return active_filter_properties.colours[subcategory];
+            return active_filter_properties.colours.get(subcategory);
         }
 
         if (has_subsystem_colour) {
-            return active_filter_properties.colours[subsystem];
+            return active_filter_properties.colours.get(subsystem);
         }
 
         if (has_role_colour) {
-            return active_filter_properties.colours[role];
+            return active_filter_properties.colours.get(role);
         }
 
         return false;
@@ -437,12 +437,14 @@ document.addEventListener("DOMContentLoaded", function(event) {
                             d3.select(this).remove();
                             d3.select("#" + cur.prefix + self.getAttribute("which")).append(() => self); /* HACK */
                             /* TODO: figure out if this is a good idea, maybe they should stay? */
-                            active_filter_properties.colours[this.innerText] = null;
+                            active_filter_properties.colours.remove(this.innerText);
                             cur.active_filters.remove(v);
                         } else {
                             let self = this;
                             d3.select(this).remove();
-                            active_filter_properties.colours[this.innerText] = this.getAttribute("colour");
+                            if (this.hasAttribute("colour")) {
+                                active_filter_properties.colours.set(this.innerText, this.getAttribute("colour"));
+                            }
                             d3.select("#data-active-filters").append(() => self);
                             cur.active_filters.add(v);
                         }
@@ -533,8 +535,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
             d3.select("#data-active-filters").selectAll("button").each(function(_, i) {
                 let filter_name = this.innerText;
-                active_filter_properties.colours[filter_name] = get_random_colour();
-                let our_new_colour = active_filter_properties.colours[filter_name];
+                active_filter_properties.colours.set(filter_name, get_random_colour());
+                let our_new_colour = active_filter_properties.colours.get(filter_name);
                 d3.select(this).style("border", "8px solid " + our_new_colour);
                 d3.select(this).attr("colour", our_new_colour);
             });
