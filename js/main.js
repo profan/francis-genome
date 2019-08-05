@@ -380,7 +380,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             for_each_filter(function(filter_name, filter_type) {
 
                 any_filters = true; /* HACK */
-                if (matched_any) return; /* ALREADY MATCHED, behaviour now matches other search.. */
+                // if (matched_any) return; /* ALREADY MATCHED, behaviour now matches other search.. */
 
                 let found_match = matches_any_mapping(self.innerText, filter_name, category_mapping);
                 let has_match = (found_match == filter_name);
