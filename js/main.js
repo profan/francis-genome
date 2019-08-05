@@ -470,9 +470,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
         }
 
         window.addEventListener('wheel', function (e) {
+            let scroll_increment = 5;
             /* also check if we actually need scrolling atm */
             if (mouse_inside_graph) {
-                on_new_scroll_delta(e.deltaY);
+                on_new_scroll_delta((e.deltaY / e.deltaY) * Math.sign(e.deltaY) * scroll_increment);
                 e.preventDefault();
             }
         }, {passive: false}); /* fix for chrome */
