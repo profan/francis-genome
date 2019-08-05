@@ -52,3 +52,24 @@ input[type=range][orient=vertical] {
     text-anchor: end;
     text-align: left;
 }
+
+.button {
+    cursor: pointer;
+    display: inline-block;
+    background-color: rgb(65, 65, 65);
+    text-decoration: none;
+    padding: 5px 10px;
+    margin: 4px 2px;
+    border: none;
+    color: white;
+}
+
+.button:hover {
+    background-color: rgb(104, 104, 104);
+    color: white;
+}
+
+.button:active {
+    background-color: #808080;
+    transform: translateY(2px);
+}

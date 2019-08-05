@@ -378,13 +378,14 @@ document.addEventListener("DOMContentLoaded", function(event) {
                     .attr("id", cur.prefix + i)
                     .style("display", "block")
                 .append("button")
-                    .attr("class", i)
+                    .attr("which", i)
+                    .attr("class", "button")
                     .on("click", function(e) { 
 
                         if (cur.active_filters.has(v)) {
                             let self = this;
                             d3.select(this).remove();
-                            d3.select("#" + cur.prefix + self.getAttribute("class")).append(() => self); /* HACK */
+                            d3.select("#" + cur.prefix + self.getAttribute("which")).append(() => self); /* HACK */
                             cur.active_filters.remove(v);
                         } else {
                             let self = this;
