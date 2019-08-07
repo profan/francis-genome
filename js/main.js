@@ -31,10 +31,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
         return d3.set(arr.flatMap(x => x[property]).filter(x => typeof x === 'string'));
     }
 
-    let protein_belongs_to_genome = function (p, contig_id) {
-        return p.contig_ids.includes(contig_id);
-    }
-
     let deduplicate_data = function(slice) {
 
         let augmented_data = slice.flatMap(function (e) {
@@ -243,7 +239,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
             let filters = active_filters[type];
 
             filters.each(function(filter) {
-                fn(filter, type);
+                let ret_val = fn(filter, type);
+                if (ret_val === false) return;
             });
             
         }
@@ -259,26 +256,23 @@ document.addEventListener("DOMContentLoaded", function(event) {
         let filtered_data = array.filter(function (e) {
 
             let all_filters_empty = true;
+            let didnt_match_one = false;
+
             for (let type in active_filters) {
 
                 let filters = active_filters[type];
-                let found_match = false;
 
                 filters.each(function(filter) {
                     all_filters_empty = false;
-                    if (filter == e[type]) {
-                        found_match = true;
+                    if (filter != e[type]) {
+                        didnt_match_one = true;
                     }
                 });
-
-                if (found_match) {
-                    return true;
-                }
                 
             }
 
             /* in case we had no filters, return all the things */
-            return all_filters_empty;
+            return all_filters_empty || (!didnt_match_one);
 
         });
 
@@ -321,6 +315,29 @@ document.addEventListener("DOMContentLoaded", function(event) {
         y.domain(axis_swapped ? genes_sorted : figfams_sorted)
             .range([dims.height, 0]);
 
+        let on_click_fig = function(e) {
+
+            let text = d3.select(this).select("text").text();
+            let category = all_data[text].category;
+            let subcategory = all_data[text].subcategory;
+            let subsystem = all_data[text].subsystem;
+            let role = all_data[text].role;
+
+            let is_hidden = d3.select("#data-fig-info").style("visibility") == "hidden";
+            if (is_hidden) {
+                d3.select("#data-fig-info").style("visibility", "visible");
+            }
+
+            d3.select("#data-fig-info-id").text(text);
+            d3.select("#data-fig-info-category").text(category);
+            d3.select("#data-fig-info-subcategory").text(subcategory);
+            d3.select("#data-fig-info-subsystem").text(subsystem);
+            d3.select("#data-fig-info-role").text(role);
+
+            console.log("KLAK");
+            
+        }
+
         svg.select(".x")
             .attr("transform", "translate(0," + dims.height + ")")
             .transition().duration(100)
@@ -333,7 +350,13 @@ document.addEventListener("DOMContentLoaded", function(event) {
         
         svg.select(".y")
             .transition().duration(100)
-            .call(d3.axisLeft(y).tickSize(0));
+            .call(d3.axisLeft(y).tickSize(0))
+                .selectAll("text")
+                .attr("class", "y-axis")
+            .select(".domain").remove();
+
+        svg.selectAll("g .y.axis .tick")
+            .on("click", on_click_fig);
 
         let plot_data = deduplicate_data(array);
 
@@ -355,78 +378,59 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
         let any_filters = false;
 
-        if (do_filter)
-        for_each_filter(function(filter_name, filter_type) {
+        let matches_any_mapping = function(value, target, mappings) {
 
-            any_filters = true;
-
-            d3.select("#data-category").selectAll("li button").each(function(_, i) {
-
-                let cur_item = category_mapping[this.innerText];
-                while (cur_item && cur_item != filter_name) {
-                    let new_item = category_mapping[cur_item];
-                    if (!new_item || category_mapping[new_item] == category_mapping[new_item]) {
-                        break;
-                    } else {
-                        cur_item = new_item;
-                    }
+            let cur_item = mappings[value];
+            while (cur_item != target) {
+                let new_item = mappings[cur_item];
+                if (!new_item || mappings[new_item] == mappings[cur_item]) {
+                    break;
+                } else {
+                    cur_item = new_item;
                 }
+            }
 
-                this.style.display = (cur_item == filter_name) ? "inline-block" : "none";
+            return cur_item;
+
+        }
+
+        let show_matching_mappings = function(_, i) {
+
+            let self = this;
+            let matched_any = false;
+
+            for_each_filter(function(filter_name, filter_type) {
+
+                any_filters = true; /* HACK */
+                // if (matched_any) return; /* ALREADY MATCHED, behaviour now matches other search.. */
+
+                let found_match = matches_any_mapping(self.innerText, filter_name, category_mapping);
+                let has_match = (found_match == filter_name);
+
+                self.style.display = has_match ? "inline-block" : "none";
+                if (has_match) {
+                    matched_any = true;
+                    return false;
+                }
 
             });
 
-            d3.select("#data-subcategory").selectAll("li button").each(function(_, i) {
+        }
 
-                let cur_item = category_mapping[this.innerText];
-                while (cur_item != filter_name) {
-                    let new_item = category_mapping[cur_item];
-                    if (!new_item || category_mapping[cur_item] == category_mapping[new_item]) {
-                        break;
-                    } else {
-                        cur_item = new_item;
-                    }
-                }
+        if (do_filter) {
 
-                this.style.display = (cur_item == filter_name) ? "inline-block" : "none";
+            d3.select("#data-category").selectAll("li button").each(show_matching_mappings);
 
-            });
+            d3.select("#data-subcategory").selectAll("li button").each(show_matching_mappings);
 
-            d3.select("#data-subsystem").selectAll("li button").each(function(_, i) {
+            d3.select("#data-subsystem").selectAll("li button").each(show_matching_mappings);
 
-                let cur_item = category_mapping[this.innerText];
-                while (cur_item != filter_name) {
-                    let new_item = category_mapping[cur_item];
-                    if (!new_item || category_mapping[cur_item] == category_mapping[new_item]) {
-                        break;
-                    } else {
-                        cur_item = new_item;
-                    }
-                }
+            d3.select("#data-role").selectAll("li button").each(show_matching_mappings);
 
-                this.style.display = (cur_item == filter_name) ? "inline-block" : "none";
-
-            });
-
-            d3.select("#data-role").selectAll("li button").each(function(_, i) {
-
-                let cur_item = category_mapping[this.innerText];
-                while (cur_item != filter_name) {
-                    let new_item = category_mapping[cur_item];
-                    if (!new_item || category_mapping[cur_item] == category_mapping[new_item]) {
-                        break;
-                    } else {
-                        cur_item = new_item;
-                    }
-                }
-
-                this.style.display = (cur_item == filter_name) ? "inline-block" : "none";
-
-            });
-
-        });
+        }
 
         if (!any_filters) {
+
             d3.select("#data-category").selectAll("li button").each(function(_, i) {
                 this.style.display = "inline-block";
             });
@@ -442,32 +446,33 @@ document.addEventListener("DOMContentLoaded", function(event) {
             d3.select("#data-role").selectAll("li button").each(function(_, i) {
                 this.style.display = "inline-block";
             });
+
         }
 
     }
 
-    d3.json("data/proteins.json").then(function(data) {
+    Promise.all([
+        d3.json("deps/colours.json"),
+        d3.json("data/categories.json"),
+        d3.json("data/proteins.json")
+    ]).then(function([colour_data, category_data, protein_data]) {
 
-        let colours;
-        d3.json("deps/colours.json").then(function(data) {
-            colours = Object.values(data);
-        });
-
-        let category_mapping;
-        d3.json("data/categories.json").then(function(data) {
-            category_mapping = data;
-        });
-
+        let colours = Object.values(colour_data);
+        let category_mapping = category_data;
+        let data = protein_data;
+        
         for (let key in data) {
             data[key].fig = key;
         }
+
+        let original_data = data;
 
         let initial_start_offset = +d3.select("#data-range-start-input").property("value");
         let initial_end_offset = +d3.select("#data-range-end-input").property("value");
         let initial_offset = +d3.select("#data-range-offset-input").property("value");
         
         let all_data_arr = Object.values(data).sort((a, b) => d3.ascending(a.fig, b.fig));
-        all_data_arr.map((e) => ({fig: e.fig, contig_id: e.contig_id}));
+        let original_array = all_data_arr;
 
         let sliced_arr = all_data_arr.slice(initial_start_offset + initial_offset, initial_end_offset + initial_offset);
 
@@ -499,6 +504,66 @@ document.addEventListener("DOMContentLoaded", function(event) {
             let bound_func = on_range_offset_input_changed.bind(element);
             bound_func();
         }
+
+        /* query related functions */
+        let protein_belongs_to_genome = function (p, contig_id) {
+            return p.contig_ids.includes(contig_id);
+        }
+
+        let and_func = function(...args) {
+            let cur_protein = this.cur_protein;
+            return args.every((current) => protein_belongs_to_genome(cur_protein, current));
+        }
+
+        let or_func = function(...args) {
+            let cur_protein = this.cur_protein;
+            return args.some((current) =>  protein_belongs_to_genome(cur_protein, current));
+        }
+
+        let sub_func = function(a, b) {
+            let cur_protein = this.cur_protein;
+            return protein_belongs_to_genome(cur_protein, a) && !protein_belongs_to_genome(cur_protein, b);
+        }
+
+        let add_func = function(a, b) {
+            let cur_protein = this.cur_protein;
+            return protein_belongs_to_genome(cur_protein, a) && protein_belongs_to_genome(cur_protein, b);
+        }
+
+        d3.select("#data-query-reset").on("click", function() {
+
+            all_data_arr = original_array;
+            update_with_filters(svg, x, y, all_data_arr, data); /* HACK */
+
+        });
+
+        d3.select("#data-query-submit").on("click", function() {
+
+            let query_text = d3.select("#data-query").property("value");
+            let query_context = {
+                cur_protein : null
+            }
+            
+            let and = and_func.bind(query_context);
+            let or = or_func.bind(query_context);
+            let sub = sub_func.bind(query_context);
+            let add = add_func.bind(query_context);
+
+            all_data_arr = original_array.filter(function(p) {
+                query_context.cur_protein = p;
+                let result = eval(query_text);
+                if (typeof(result) === 'boolean') {
+                    return result;
+                } else {
+                    return true;
+                }
+            });
+
+            update_with_filters(svg, x, y, all_data_arr, data); /* HACK */
+
+        });
+
+        /* filter related functions */
 
         const filters = [
             {

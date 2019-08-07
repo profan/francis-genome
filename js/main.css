@@ -49,6 +49,7 @@ input[type=range][orient=vertical] {
 }
 
 .y-axis {
+    cursor: pointer;
     text-anchor: end;
     text-align: left;
 }

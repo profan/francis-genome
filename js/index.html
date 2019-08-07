@@ -14,43 +14,70 @@
 
 <body>
     <div class="content">
-        <h1>Genome Selection</h1>
-        <h1>Protein Category Visualization - order by <select id="data-order-by"></select><select id="data-order-dir"></select> <!-- <button class="button" id="data-swap-axes">Swap Axes</button> --> </h1>
-        <div id="data-graph" class="data-graph"></div>
+        <h1>Genome Selection - Query</h1>
+        <textarea rows=8 cols=72 id="data-query"></textarea> </br>
+        <button id="data-query-reset">Reset Selection</button><button id="data-query-submit">Submit Query</button>
+
+        <div id="data-view-table">
+            <h1>Protein Category Visualization - order by <select id="data-order-by"></select><select id="data-order-dir"></select> <!-- <button class="button" id="data-swap-axes">Swap Axes</button> --> </h1>
+            <div id="data-graph" class="data-graph"></div>
+        </div>
+
+        <div id="data-view-hierarchy" style="visibility: hidden;">
+            <h1>Protein Category Overview</h1>
+            <div id="data-table" class="data-graph"></div>
+        </div>
+
+        <div id="data-fig-info" style="visibility: hidden;">
+                FIG: <span id="data-fig-info-id"></span> </br>
+                Category: <span id="data-fig-info-category"></span> </br>
+                Subcategory: <span id="data-fig-info-subcategory"></span> </br>
+                Subsystem: <span id="data-fig-info-subsystem"></span> </br>
+                Role: <span id="data-fig-info-role"></span>
+        </div>
+
         <h2>Current Range [<span id="data-range-start">0</span>, <span id="data-range-end">25</span>] - Shown Proteins: <span id="data-filtered-entries">0</span> - Total Filtered Proteins: <span id="data-total-entries">0</span></h2>
         Offset <input id="data-range-offset-input" value=0 type="number" size=16 min=0>
         Start <input id="data-range-start-input" value=0 type="number" size=16 min=0>
         End <input id="data-range-end-input" value=25 type="number" size=16 min=0>
+
         <button id="data-range-reset" class="button">Reset</button>
         <h2>Active Filters <button class="button" id="data-assign-random-colours">Assign Random Colours</button></h2>
         <div id="data-active-filters"></div>
         <h2>Filters - Filter Filters? <input type="checkbox" class="button" id="data-filter-the-filters"></input></h2>
+
         <div class="flex-grid">
+            
             <div class="column">
                 <h3>Category</h3>
                 <input id="data-category-search" type="search" placeholder="Filter..." size=16></input>
                 <div id="data-category">
                 </div>
             </div>
+
             <div class="column">
                 <h3>Subcategory</h3>
                 <input id="data-subcategory-search" type="search" placeholder="Filter..." size=16></input>
                 <div id="data-subcategory">
                 </div>
             </div>
+
             <div class="column">
                 <h3>Subsystem</h3>
                 <input id="data-subsystem-search" type="search" placeholder="Filter..." size=16></input>
                 <div id="data-subsystem">
                 </div>
             </div>
+
             <div class="column">
                 <h3>Role</h3>
                 <input id="data-role-search" type="search" placeholder="Filter..." size=16></input>
                 <div id="data-role">
                 </div>
             </div>
+
         </div>
+
     </div>
 </body>
 
