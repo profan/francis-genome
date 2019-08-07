@@ -276,7 +276,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             }
 
             /* in case we had no filters, return all the things */
-            return all_filters_empty ^ !didnt_match_one;
+            return all_filters_empty ^ (!didnt_match_one);
 
         });
 
@@ -426,18 +426,16 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     }
 
-    d3.json("data/proteins.json").then(function(data) {
+    Promise.all([
+        d3.json("deps/colours.json"),
+        d3.json("data/categories.json"),
+        d3.json("data/proteins.json")
+    ]).then(function([colour_data, category_data, protein_data]) {
 
-        let colours;
-        d3.json("deps/colours.json").then(function(data) {
-            colours = Object.values(data);
-        });
-
-        let category_mapping;
-        d3.json("data/categories.json").then(function(data) {
-            category_mapping = data;
-        });
-
+        let colours = Object.values(colour_data);
+        let category_mapping = category_data;
+        let data = protein_data;
+        
         for (let key in data) {
             data[key].fig = key;
         }
