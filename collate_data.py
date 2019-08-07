@@ -114,3 +114,26 @@ output_category_file_path = os.path.join(cur_dir, 'output/categories.json')
 with open(output_category_file_path, 'w') as f:
     json.dump(all_category_data, f)
     print("[collate_data] wrote data with %d categories/subcategories/subsystems/roles to: %s" % (len(all_category_data), output_category_file_path))
+
+output_genomes_file_path = os.path.join(cur_dir, 'output/genomes.json')
+with open(output_category_file_path, 'w') as f:
+
+    all_genome_data = {}
+    total_proteins = 0
+
+    for (figfam_id, data)  in all_protein_data.items():
+        for contig_id in data['contig_ids']:
+            if contig_id not in all_genome_data:
+                all_genome_data[contig_id] = {
+                    'proteins' : set(figfam_id)
+                }
+            else:
+                all_genome_data[contig_id]['proteins'].add(figfam_id)
+        total_proteins += 1
+
+    # json no has sets, so we turn sets into list at end
+    for (contig_id, data) in all_genome_data.items():
+        data['proteins'] = list(data['proteins'])
+
+    json.dump(all_genome_data, f)
+    print("[collate_data] wrote data with %d genomes (%d proteins) to: %s" % (len(all_genome_data), total_proteins, output_genomes_file_path))
