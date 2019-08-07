@@ -31,10 +31,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
         return d3.set(arr.flatMap(x => x[property]).filter(x => typeof x === 'string'));
     }
 
-    let protein_belongs_to_genome = function (p, contig_id) {
-        return p.contig_ids.includes(contig_id);
-    }
-
     let deduplicate_data = function(slice) {
 
         let augmented_data = slice.flatMap(function (e) {
@@ -481,6 +477,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
         }
 
         /* query related functions */
+        let protein_belongs_to_genome = function (p, contig_id) {
+            return p.contig_ids.includes(contig_id);
+        }
+
         let and_func = function(...args) {
             let cur_protein = this.cur_protein;
             return args.every((current) => protein_belongs_to_genome(cur_protein, current));
@@ -501,6 +501,13 @@ document.addEventListener("DOMContentLoaded", function(event) {
             return protein_belongs_to_genome(cur_protein, a) && protein_belongs_to_genome(cur_protein, b);
         }
 
+        d3.select("#data-query-reset").on("click", function() {
+            
+            all_data_arr = original_array;
+            update_with_filters(svg, x, y, all_data_arr, data); /* HACK */
+
+        });
+
         d3.select("#data-query-submit").on("click", function() {
 
             let query_text = d3.select("#data-query").property("value");
@@ -515,7 +522,12 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
             all_data_arr = original_array.filter(function(p) {
                 query_context.cur_protein = p;
-                return eval(query_text) === false;
+                let result = eval(query_text);
+                if (typeof(result) === 'boolean') {
+                    return result;
+                } else {
+                    return true;
+                }
             });
 
             update_with_filters(svg, x, y, all_data_arr, data); /* HACK */
