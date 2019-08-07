@@ -125,7 +125,7 @@ with open(output_genomes_file_path, 'w') as f:
         for contig_id in data['contig_ids']:
             if contig_id not in all_genome_data:
                 all_genome_data[contig_id] = {
-                    'proteins' : set(figfam_id)
+                    'proteins' : set([figfam_id])
                 }
             else:
                 all_genome_data[contig_id]['proteins'].add(figfam_id)
