@@ -315,6 +315,29 @@ document.addEventListener("DOMContentLoaded", function(event) {
         y.domain(axis_swapped ? genes_sorted : figfams_sorted)
             .range([dims.height, 0]);
 
+        let on_click_fig = function(e) {
+
+            let text = d3.select(this).select("text").text();
+            let category = all_data[text].category;
+            let subcategory = all_data[text].subcategory;
+            let subsystem = all_data[text].subsystem;
+            let role = all_data[text].role;
+
+            let is_hidden = d3.select("#data-fig-info").style("visibility") == "hidden";
+            if (is_hidden) {
+                d3.select("#data-fig-info").style("visibility", "visible");
+            }
+
+            d3.select("#data-fig-info-id").text(text);
+            d3.select("#data-fig-info-category").text(category);
+            d3.select("#data-fig-info-subcategory").text(subcategory);
+            d3.select("#data-fig-info-subsystem").text(subsystem);
+            d3.select("#data-fig-info-role").text(role);
+
+            console.log("KLAK");
+            
+        }
+
         svg.select(".x")
             .attr("transform", "translate(0," + dims.height + ")")
             .transition().duration(100)
@@ -327,7 +350,13 @@ document.addEventListener("DOMContentLoaded", function(event) {
         
         svg.select(".y")
             .transition().duration(100)
-            .call(d3.axisLeft(y).tickSize(0));
+            .call(d3.axisLeft(y).tickSize(0))
+                .selectAll("text")
+                .attr("class", "y-axis")
+            .select(".domain").remove();
+
+        svg.selectAll("g .y.axis .tick")
+            .on("click", on_click_fig);
 
         let plot_data = deduplicate_data(array);
 
@@ -502,7 +531,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         }
 
         d3.select("#data-query-reset").on("click", function() {
-            
+
             all_data_arr = original_array;
             update_with_filters(svg, x, y, all_data_arr, data); /* HACK */
 
