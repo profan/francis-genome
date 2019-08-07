@@ -276,7 +276,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             }
 
             /* in case we had no filters, return all the things */
-            return all_filters_empty ^ (!didnt_match_one);
+            return all_filters_empty || (!didnt_match_one);
 
         });
 
@@ -440,12 +440,14 @@ document.addEventListener("DOMContentLoaded", function(event) {
             data[key].fig = key;
         }
 
+        let original_data = data;
+
         let initial_start_offset = +d3.select("#data-range-start-input").property("value");
         let initial_end_offset = +d3.select("#data-range-end-input").property("value");
         let initial_offset = +d3.select("#data-range-offset-input").property("value");
         
         let all_data_arr = Object.values(data).sort((a, b) => d3.ascending(a.fig, b.fig));
-        all_data_arr.map((e) => ({fig: e.fig, contig_id: e.contig_id}));
+        let original_array = all_data_arr;
 
         let sliced_arr = all_data_arr.slice(initial_start_offset + initial_offset, initial_end_offset + initial_offset);
 
@@ -477,6 +479,50 @@ document.addEventListener("DOMContentLoaded", function(event) {
             let bound_func = on_range_offset_input_changed.bind(element);
             bound_func();
         }
+
+        /* query related functions */
+        let and_func = function(...args) {
+            let cur_protein = this.cur_protein;
+            return args.every((current) => protein_belongs_to_genome(cur_protein, current));
+        }
+
+        let or_func = function(...args) {
+            let cur_protein = this.cur_protein;
+            return args.some((current) =>  protein_belongs_to_genome(cur_protein, current));
+        }
+
+        let sub_func = function(a, b) {
+            let cur_protein = this.cur_protein;
+            return protein_belongs_to_genome(cur_protein, a) && !protein_belongs_to_genome(cur_protein, b);
+        }
+
+        let add_func = function(a, b) {
+            let cur_protein = this.cur_protein;
+            return protein_belongs_to_genome(cur_protein, a) && protein_belongs_to_genome(cur_protein, b);
+        }
+
+        d3.select("#data-query-submit").on("click", function() {
+
+            let query_text = d3.select("#data-query").property("value");
+            let query_context = {
+                cur_protein : null
+            }
+            
+            let and = and_func.bind(query_context);
+            let or = or_func.bind(query_context);
+            let sub = sub_func.bind(query_context);
+            let add = add_func.bind(query_context);
+
+            all_data_arr = original_array.filter(function(p) {
+                query_context.cur_protein = p;
+                return eval(query_text) === false;
+            });
+
+            update_with_filters(svg, x, y, all_data_arr, data); /* HACK */
+
+        });
+
+        /* filter related functions */
 
         const filters = [
             {
