@@ -116,7 +116,7 @@ with open(output_category_file_path, 'w') as f:
     print("[collate_data] wrote data with %d categories/subcategories/subsystems/roles to: %s" % (len(all_category_data), output_category_file_path))
 
 output_genomes_file_path = os.path.join(cur_dir, 'output/genomes.json')
-with open(output_category_file_path, 'w') as f:
+with open(output_genomes_file_path, 'w') as f:
 
     all_genome_data = {}
     total_proteins = 0
