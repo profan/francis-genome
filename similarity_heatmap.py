@@ -4,6 +4,7 @@ import numpy
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import itertools
 
 def set_similarity(a, b):
     a_size, b_size = len(a), len(b)
@@ -12,6 +13,30 @@ def set_similarity(a, b):
         return len(c) / a_size
     elif a_size < b_size:
         return len(c) / b_size
+
+def generate_plot(similarity_map, x_labels, y_labels, plot_title, output_filename):
+
+    fig, axes = plt.subplots(figsize=(24, 24))
+    im = axes.imshow(similarity_map)
+    axes.tick_params(axis='both', pad=10)
+
+    # show color bar
+    plt.colorbar(im)
+
+    # set up ticks and labels
+    axes.set_xticks(numpy.arange(len(x_labels)))
+    axes.set_yticks(numpy.arange(len(y_labels)))
+    axes.set_xticklabels(x_labels, fontsize=8)
+    axes.set_yticklabels(y_labels, fontsize=8)
+    axes.xaxis.set_label_position('top')
+    axes.xaxis.tick_top()
+
+    plt.setp(axes.get_xticklabels(), rotation=90)
+    plt.setp(axes.get_yticklabels(), rotation=0)
+    axes.set_title(plot_title)
+
+    plt.savefig(output_filename)
+
 
 with open('output/genomes.json', 'r') as f:
 
@@ -26,30 +51,15 @@ with open('output/genomes.json', 'r') as f:
                 similarity[contig_id][other_id] = set_similarity(proteins, other_proteins)
 
     # now the plotting...
-    genome_labels_x = [contig_id for contig_id in similarity]
-    genome_labels_x.sort()
+    genome_labels = [contig_id for contig_id in similarity]
+    genome_labels.sort()
 
-    genome_labels_y = [contig_id for contig_id in similarity]
-    genome_labels_y.sort()
+    similarity_map = [[similarity[x][y] for y in genome_labels] for x in genome_labels]
 
-    similarity_map = [[similarity[x][y] for y in genome_labels_y] for x in genome_labels_x]
-
-    fig, axes = plt.subplots(figsize=(24, 24))
-    im = axes.imshow(similarity_map)
-    axes.tick_params(axis='both', pad=5)
-
-    # show color bar
-    plt.colorbar(im)
-
-    # set up ticks and labels
-    axes.set_xticks(numpy.arange(len(genome_labels_x)))
-    axes.set_yticks(numpy.arange(len(genome_labels_y)))
-    axes.set_xticklabels(genome_labels_x, fontsize=8)
-    axes.set_yticklabels(genome_labels_y, fontsize=8)
-    axes.xaxis.set_label_position('top')
-    axes.xaxis.tick_top()
-
-    plt.setp(axes.get_xticklabels(), rotation=90)
-    axes.set_title("Pairwise Sample Similarity")
-
-    plt.savefig('foo.png')
+    generate_plot(
+        similarity_map,
+        x_labels = genome_labels,
+        y_labels = genome_labels,
+        plot_title="Pairwise Sample Similarity",
+        output_filename="similarity_order_by_genome.png"
+    )
