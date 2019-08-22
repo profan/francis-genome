@@ -101,7 +101,7 @@ all_unique_proteins = set.union(*all_proteins)
 all_common_proteins = set.intersection(*all_proteins)
 
 percentage_skipped = (skipped_entries / total_entries) * 100
-percentage_skipped_with_figs = (skipped_entries / total_entries) * 100
+percentage_skipped_with_figs = (skipped_entries_with_figs / total_entries) * 100
 total_entries_skipped = skipped_entries + skipped_entries_with_figs
 total_percentage_skipped = percentage_skipped_with_figs + percentage_skipped
 print("[protein] skipped entries (no figs): %d (%d %% of total)" % (skipped_entries, percentage_skipped))
